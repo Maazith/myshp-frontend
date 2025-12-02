@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=pages/index.html" />
+    <title>EdithCloths</title>
+    <style>
+      body {
+        background: #0b0b0b;
+        color: #ffd700;
+        font-family: "Poppins", sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      a {
+        color: #ffd700;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      Redirecting to
+      <a href="pages/index.html">EdithCloths</a>
+      ...
+    </p>
+  </body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Shop - Home</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="/index.html" class="logo">LUXURY</a>
+            <nav>
+                <ul>
+                    <li><a href="/index.html" class="active">Home</a></li>
+                    <li><a href="/product-list.html">Products</a></li>
+                    <li><a href="/cart.html">Cart</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <a href="/cart.html" class="cart-icon">
+                    🛒
+                    <span id="cart-badge" style="display: none;">0</span>
+                </a>
+                <span id="auth-buttons">
+                    <a href="/login.html" class="btn-logout">Login</a>
+                    <a href="/signup.html" class="btn-logout">Sign Up</a>
+                </span>
+                <span id="user-menu" style="display: none;">
+                    <span id="user-name"></span>
+                    <button class="btn-logout" onclick="auth.logout()">Logout</button>
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to Luxury</h1>
+            <p>Discover exquisite products crafted with perfection</p>
+            <a href="/product-list.html" class="btn-primary">Shop Now</a>
+        </div>
+    </section>
+
+    <div class="container">
+        <h2 class="section-title">Shop by Categories</h2>
+        <div class="categories-grid" id="categories-container">
+            <!-- Categories will be loaded here -->
+        </div>
+
+        <h2 class="section-title">Featured Products</h2>
+        <div class="products-grid" id="featured-products">
+            <!-- Featured products will be loaded here -->
+        </div>
+
+        <h2 class="section-title">New Arrivals</h2>
+        <div class="products-grid" id="new-products">
+            <!-- New products will be loaded here -->
+        </div>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/products.js"></script>
+    <script src="/assets/js/cart.js"></script>
+    <script>
+        // Check auth status
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (auth.isLoggedIn()) {
+                const userResult = await auth.getCurrentUser();
+                if (userResult.success) {
+                    document.getElementById('auth-buttons').style.display = 'none';
+                    document.getElementById('user-menu').style.display = 'flex';
+                    document.getElementById('user-menu').style.alignItems = 'center';
+                    document.getElementById('user-menu').style.gap = '1rem';
+                    const userName = userResult.user.first_name || userResult.user.email;
+                    document.getElementById('user-name').textContent = `Hello, ${userName}`;
+                } else {
+                    auth.logout();
+                }
+            }
+
+            // Load categories
+            await products.fetchCategories();
+            products.renderCategories('categories-container');
+
+            // Load featured products
+            const featured = await products.fetchProducts({ page: 1 });
+            products.renderProductList('featured-products', featured.products.slice(0, 8));
+
+            // Load new products
+            const newProducts = await products.fetchProducts({ page: 1 });
+            products.renderProductList('new-products', newProducts.products.slice(0, 8));
+        });
+    </script>
+</body>
+</html>
+

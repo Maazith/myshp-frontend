@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-auth="register">
+    <header data-component="navbar"></header>
+    <main>
+      <section class="two-column">
+        <div class="form-card glass-card">
+          <p class="badge">Join the circle</p>
+          <h1>Create your EdithCloths account</h1>
+          <form id="register-form" class="auth-form">
+            <div class="form-group">
+              <label for="reg-username">Username</label>
+              <input id="reg-username" name="username" required />
+            </div>
+            <div class="form-group">
+              <label for="reg-email">Email</label>
+              <input id="reg-email" name="email" type="email" required />
+            </div>
+            <div class="form-group">
+              <label for="reg-password">Password</label>
+              <input id="reg-password" name="password" type="password" minlength="6" required />
+            </div>
+            <button class="btn" type="submit">Create Account</button>
+          </form>
+          <p style="margin-top:1rem;color:var(--muted)">Already a member?
+            <a href="login.html" style="color:var(--gold)">Login</a>
+          </p>
+          <p id="register-error" style="color:var(--danger);margin-top:1rem"></p>
+        </div>
+      </section>
+    </main>
+    <footer data-component="footer"></footer>
+    <script type="module" src="../assets/js/auth.js"></script>
+  </body>
+</html>
+

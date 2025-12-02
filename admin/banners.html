@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banners | EdithCloths Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-admin="banners">
+    <div class="admin-grid">
+      <aside class="sidebar" data-admin-nav></aside>
+      <main class="admin-content">
+        <section class="glass-card">
+          <h1>Homepage Banners</h1>
+          <form id="banner-form" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="banner-title">Title</label>
+              <input id="banner-title" name="title" required />
+            </div>
+            <div class="form-group">
+              <label for="banner-subtitle">Subtitle</label>
+              <input id="banner-subtitle" name="subtitle" />
+            </div>
+            <div class="form-group">
+              <label for="banner-link">CTA Link</label>
+              <input id="banner-link" name="cta_link" placeholder="pages/men.html" />
+            </div>
+            <div class="form-group">
+              <label for="banner-media">Image</label>
+              <input id="banner-media" name="media" type="file" accept="image/*" required />
+            </div>
+            <button class="btn" type="submit">Upload Banner</button>
+            <p id="banner-message" style="margin-top:1rem"></p>
+          </form>
+        </section>
+        <section class="glass-card" id="banners-list"></section>
+      </main>
+    </div>
+    <script type="module" src="../assets/js/admin.js"></script>
+  </body>
+</html>
+
