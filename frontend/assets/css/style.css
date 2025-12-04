@@ -819,41 +819,8 @@ textarea::placeholder {
   min-height: 100vh;
 }
 
-/* Admin Mobile Menu Toggle */
-.admin-mobile-toggle {
-  display: none;
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--light-grey);
-  border-radius: var(--radius);
-  padding: 0.75rem;
-  cursor: pointer;
-  color: #FFFFFF;
-  font-size: 1.5rem;
-}
-
-.admin-mobile-toggle:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Mobile Sidebar Overlay */
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 998;
-}
-
-.sidebar-overlay.active {
-  display: block;
-}
+/* Admin Mobile Menu Toggle - Removed (Admin panel is desktop-only) */
+/* Mobile Sidebar Overlay - Removed (Admin panel is desktop-only) */
 
 .stats-grid {
   display: grid;
@@ -998,89 +965,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 1.5rem;
   }
   
-  .admin-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .admin-mobile-toggle {
-    display: block;
-  }
-  
-  .admin-content {
-    padding: 1.5rem;
-    padding-top: 5rem;
-  }
-  
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: -280px;
-    width: 260px;
-    min-height: 100vh;
-    height: 100vh;
-    z-index: 999;
-    transition: left 0.3s ease;
-    border-right: 1px solid var(--light-grey);
-    border-bottom: none;
-  }
-  
-  .sidebar.mobile-open {
-    left: 0;
-  }
-  
-  .sidebar .logo {
-    margin-top: 4rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-  }
-  
-  .stat-card {
-    padding: 1.5rem;
-  }
-  
-  .stat-card h3 {
-    font-size: 1.75rem;
-  }
-  
-  .stat-card p {
-    font-size: 0.85rem;
-  }
-  
-  /* Dashboard analytics grid */
-  .admin-content > div[style*="grid-template-columns"] {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .two-column {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 1rem;
-  }
-  
-  .section {
-    padding: 0 1rem;
-  }
-  
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .section-title {
-    font-size: 1.5rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-  }
-  
-  .form-card {
-    padding: 1.5rem;
-  }
+  /* Admin mobile responsive styles removed - Admin panel is desktop-only */
   
   .cart-item {
     grid-template-columns: 100px 1fr;
@@ -1112,19 +997,8 @@ h1, h2, h3, h4, h5, h6 {
     padding: 5rem 0.75rem 2rem;
   }
   
-  .login-section {
-    padding: 0.5rem;
-    margin: 1rem auto;
-  }
-  
-  .login-title {
-    font-size: 1.5rem;
-    margin: 0.75rem 0 1.5rem 0;
-  }
-  
-  .form-card {
-    padding: 1.25rem;
-  }
+  /* Admin login mobile styles removed - Admin panel is desktop-only */
+  /* User-facing login styles remain below */
   
   .form-group {
     margin-bottom: 1.25rem;
@@ -1369,61 +1243,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.9rem;
   }
   
-  /* Admin mobile styles */
-  .admin-content {
-    padding: 1rem;
-    padding-top: 4.5rem;
-  }
-  
-  .sidebar {
-    width: 240px;
-    left: -240px;
-    padding: 1.5rem 1rem;
-  }
-  
-  .sidebar .logo {
-    font-size: 1rem;
-    margin-top: 3rem;
-  }
-  
-  .sidebar a {
-    padding: 0.65rem 0.9rem;
-    font-size: 0.85rem;
-  }
-  
-  .admin-mobile-toggle {
-    top: 0.75rem;
-    left: 0.75rem;
-    padding: 0.6rem;
-    font-size: 1.3rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .stat-card {
-    padding: 1.25rem;
-  }
-  
-  .stat-card h3 {
-    font-size: 1.5rem;
-  }
-  
-  .stat-card p {
-    font-size: 0.8rem;
-  }
-  
-  .glass-card {
-    padding: 1.25rem !important;
-  }
-  
-  .glass-card h1,
-  .glass-card h2 {
-    font-size: 1.2rem !important;
-  }
+  /* Admin mobile styles removed - Admin panel is desktop-only */
   
   .logo img,
   .navbar-logo {
