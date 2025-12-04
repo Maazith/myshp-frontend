@@ -1,6 +1,7 @@
-// API Base URL - Update this to your Render backend URL
+// API Base URL - Production Render backend URL
 const API_BASE = 'https://myshp-backend.onrender.com/api';
-// For local development, use: 'http://127.0.0.1:8000/api'
+// For local development, uncomment below and comment above:
+// const API_BASE = 'http://127.0.0.1:8000/api';
 const ACCESS_KEY = 'edithcloths_token';
 const REFRESH_KEY = 'edithcloths_refresh';
 const USER_KEY = 'edithcloths_user';
