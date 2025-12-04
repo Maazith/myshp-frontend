@@ -46,26 +46,32 @@ const loadContactInfo = async () => {
       emailEl.innerHTML = `<strong>Email:</strong> ${settings.contact_email || 'edith0530s@gmail.com'}`;
     }
     if (phoneEl) {
-      // Format phone number nicely if available
-      const phone = settings.contact_phone || settings.whatsapp_number || '6381902506';
-      let formattedPhone = '6381902506'; // Default fallback
-      if (phone) {
-        // Remove any formatting and ensure it's 10 digits
-        const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
-        if (cleanPhone.length === 10) {
-          formattedPhone = `+91 ${cleanPhone}`;
-        } else if (cleanPhone.length > 10 && cleanPhone.startsWith('91')) {
-          formattedPhone = `+${cleanPhone}`;
-        } else {
-          formattedPhone = cleanPhone.length === 10 ? `+91 ${cleanPhone}` : phone;
-        }
+      // Force correct phone number - override API if wrong
+      const correctPhone = '6381902506';
+      const phone = settings.contact_phone || settings.whatsapp_number || correctPhone;
+      let cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+      
+      // Check if phone is the old wrong number and replace it
+      if (cleanPhone.includes('9876543210') || cleanPhone === '919876543210') {
+        cleanPhone = correctPhone;
       }
-      phoneEl.innerHTML = `<strong>Phone:</strong> ${formattedPhone}`;
+      
+      // Ensure we use correct phone
+      const finalPhone = cleanPhone.length === 10 ? cleanPhone : correctPhone;
+      phoneEl.innerHTML = `<strong>Phone:</strong> +91 ${finalPhone}`;
     }
     if (addressEl) {
-      const defaultAddress = '35/1 sivan sannadhi street keeranur (PT) kulathur (TK) Pudukkottai (DT) 622502';
-      const address = settings.contact_address || defaultAddress;
-      addressEl.innerHTML = `<strong>Address:</strong> ${address}`;
+      // Force correct address - override API if wrong
+      const correctAddress = '35/1 sivan sannadhi street keeranur (PT) kulathur (TK) Pudukkottai (DT) 622502';
+      const address = settings.contact_address || correctAddress;
+      
+      // Check if address contains old wrong values and replace
+      let finalAddress = address;
+      if (address.includes('123 Fashion Street') || address.includes('Mumbai, India') || address.includes('M.SUDHAN RAJ,')) {
+        finalAddress = correctAddress;
+      }
+      
+      addressEl.innerHTML = `<strong>Address:</strong> ${finalAddress}`;
     }
   } catch (err) {
     console.error('Error loading contact info:', err);
