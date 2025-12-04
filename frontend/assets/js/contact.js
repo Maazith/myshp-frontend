@@ -63,7 +63,7 @@ const loadContactInfo = async () => {
       phoneEl.innerHTML = `<strong>Phone:</strong> ${formattedPhone}`;
     }
     if (addressEl) {
-      const defaultAddress = 'M.SUDHAN RAJ, 35/1 sivan sannadhi street keeranur (PT) kulathur (TK) Pudukkottai (DT) 622502';
+      const defaultAddress = '35/1 sivan sannadhi street keeranur (PT) kulathur (TK) Pudukkottai (DT) 622502';
       const address = settings.contact_address || defaultAddress;
       addressEl.innerHTML = `<strong>Address:</strong> ${address}`;
     }
@@ -76,7 +76,7 @@ const loadContactInfo = async () => {
     
     if (emailEl) emailEl.innerHTML = '<strong>Email:</strong> edith0530s@gmail.com';
     if (phoneEl) phoneEl.innerHTML = '<strong>Phone:</strong> +91 6381902506';
-    if (addressEl) addressEl.innerHTML = '<strong>Address:</strong> M.SUDHAN RAJ, 35/1 sivan sannadhi street keeranur (PT) kulathur (TK) Pudukkottai (DT) 622502';
+    if (addressEl) addressEl.innerHTML = '<strong>Address:</strong> 35/1 sivan sannadhi street keeranur (PT) kulathur (TK) Pudukkottai (DT) 622502';
   }
 };
 
