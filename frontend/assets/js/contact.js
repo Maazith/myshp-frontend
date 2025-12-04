@@ -48,12 +48,24 @@ const loadContactInfo = async () => {
     if (phoneEl) {
       // Format phone number nicely if available
       const phone = settings.contact_phone || settings.whatsapp_number || '6381902506';
-      const formattedPhone = phone ? (phone.length === 10 ? `+91 ${phone}` : phone) : 'Not available';
+      let formattedPhone = '6381902506'; // Default fallback
+      if (phone) {
+        // Remove any formatting and ensure it's 10 digits
+        const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+        if (cleanPhone.length === 10) {
+          formattedPhone = `+91 ${cleanPhone}`;
+        } else if (cleanPhone.length > 10 && cleanPhone.startsWith('91')) {
+          formattedPhone = `+${cleanPhone}`;
+        } else {
+          formattedPhone = cleanPhone.length === 10 ? `+91 ${cleanPhone}` : phone;
+        }
+      }
       phoneEl.innerHTML = `<strong>Phone:</strong> ${formattedPhone}`;
     }
     if (addressEl) {
       const defaultAddress = 'M.SUDHAN RAJ, 35/1 sivan sannadhi street keeranur (PT) kulathur (TK) Pudukkottai (DT) 622502';
-      addressEl.innerHTML = `<strong>Address:</strong> ${settings.contact_address || defaultAddress}`;
+      const address = settings.contact_address || defaultAddress;
+      addressEl.innerHTML = `<strong>Address:</strong> ${address}`;
     }
   } catch (err) {
     console.error('Error loading contact info:', err);
