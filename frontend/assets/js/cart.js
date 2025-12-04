@@ -19,6 +19,31 @@ const renderItems = (cart) => {
   checkoutBtn.disabled = false;
   itemsContainer.innerHTML = cart.items
     .map((item) => {
+      // Helper function to convert relative image URLs to absolute backend URLs
+      const getAbsoluteImageUrl = (imageUrl) => {
+        if (!imageUrl) return null;
+        
+        // If already absolute URL (http/https), return as is
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+          return imageUrl;
+        }
+        
+        // If starts with /media/, prepend backend URL
+        if (imageUrl.startsWith('/media/')) {
+          const backendUrl = api.baseUrl.replace('/api', '');
+          return `${backendUrl}${imageUrl}`;
+        }
+        
+        // If relative path, try to construct absolute URL
+        if (imageUrl.startsWith('/')) {
+          const backendUrl = api.baseUrl.replace('/api', '');
+          return `${backendUrl}${imageUrl}`;
+        }
+        
+        // Return as is for relative paths (like ../assets/img/placeholder.jpg)
+        return imageUrl;
+      };
+      
       // Get image URL - prioritize variant-specific images (color-specific), then product_media, then placeholder
       let imageUrl = null;
       
@@ -33,12 +58,12 @@ const renderItems = (cart) => {
         imageUrl = item.variant.product_media;
       }
       
-      // Ensure we have a valid absolute URL or use placeholder
-      if (!imageUrl || (!imageUrl.startsWith('http') && !imageUrl.startsWith('/'))) {
+      // Convert to absolute URL if needed
+      imageUrl = getAbsoluteImageUrl(imageUrl);
+      
+      // Fallback to placeholder
+      if (!imageUrl) {
         imageUrl = '../assets/img/placeholder.jpg';
-      } else if (imageUrl.startsWith('/') && !imageUrl.startsWith('http')) {
-        // Convert relative backend path to absolute URL
-        imageUrl = `http://127.0.0.1:8000${imageUrl}`;
       }
       
       return `

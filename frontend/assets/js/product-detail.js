@@ -27,6 +27,31 @@ if (!productId) {
   holder.error.textContent = 'Invalid product.';
 }
 
+// Helper function to convert relative image URLs to absolute backend URLs
+const getAbsoluteImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  
+  // If already absolute URL (http/https), return as is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // If starts with /media/, prepend backend URL
+  if (imageUrl.startsWith('/media/')) {
+    const backendUrl = api.baseUrl.replace('/api', '');
+    return `${backendUrl}${imageUrl}`;
+  }
+  
+  // If relative path, try to construct absolute URL
+  if (imageUrl.startsWith('/')) {
+    const backendUrl = api.baseUrl.replace('/api', '');
+    return `${backendUrl}${imageUrl}`;
+  }
+  
+  // Return as is for relative paths (like ../assets/img/placeholder.jpg)
+  return imageUrl;
+};
+
 const renderMedia = (product, selectedColor = null) => {
   // Get images for selected color, or fallback to hero image or product images
   let imagesToShow = [];
@@ -35,37 +60,40 @@ const renderMedia = (product, selectedColor = null) => {
     // Find variant with selected color
     const colorVariant = state.variants.find(v => v.color === selectedColor);
     if (colorVariant && colorVariant.images && colorVariant.images.length > 0) {
-      imagesToShow = colorVariant.images.map(img => img.image_url || img.image);
+      imagesToShow = colorVariant.images.map(img => getAbsoluteImageUrl(img.image_url || img.image));
     }
   }
   
   // Fallback to product images or hero image
   if (imagesToShow.length === 0) {
     if (product.images && product.images.length > 0) {
-      imagesToShow = product.images.map(img => img.image_url || img.image);
+      imagesToShow = product.images.map(img => getAbsoluteImageUrl(img.image_url || img.image));
     } else if (product.hero_media_url || product.hero_media) {
-      imagesToShow = [product.hero_media_url || product.hero_media];
+      imagesToShow = [getAbsoluteImageUrl(product.hero_media_url || product.hero_media)];
     } else {
       imagesToShow = ['../assets/img/placeholder.jpg'];
     }
   }
   
+  // Filter out null values
+  imagesToShow = imagesToShow.filter(url => url);
+  
   // Render image gallery
   if (imagesToShow.length === 1) {
     holder.media.innerHTML = `
-      <img src="${imagesToShow[0]}" alt="${product.title}" style="width:100%;border-radius:var(--radius);object-fit:cover;" onerror="this.src='../assets/img/placeholder.jpg'" />
+      <img src="${imagesToShow[0]}" alt="${product.title}" style="width:100%;border-radius:var(--radius);object-fit:cover;" onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
     `;
   } else {
     // Multiple images - show gallery
     holder.media.innerHTML = `
       <div style="position:relative;">
-        <img id="main-product-image" src="${imagesToShow[0]}" alt="${product.title}" style="width:100%;border-radius:var(--radius);object-fit:cover;margin-bottom:1rem;" onerror="this.src='../assets/img/placeholder.jpg'" />
+        <img id="main-product-image" src="${imagesToShow[0]}" alt="${product.title}" style="width:100%;border-radius:var(--radius);object-fit:cover;margin-bottom:1rem;" onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
           ${imagesToShow.map((img, idx) => `
             <img src="${img}" alt="${product.title} - Image ${idx + 1}" 
                  style="width:80px;height:80px;border-radius:var(--radius);object-fit:cover;cursor:pointer;border:2px solid ${idx === 0 ? 'var(--light-grey)' : 'transparent'};"
                  onclick="document.getElementById('main-product-image').src='${img}'"
-                 onerror="this.src='../assets/img/placeholder.jpg'" />
+                 onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
           `).join('')}
         </div>
       </div>

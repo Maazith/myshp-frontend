@@ -217,6 +217,31 @@ export const mountFooter = async () => {
   `;
 };
 
+// Helper function to convert relative image URLs to absolute backend URLs
+const getAbsoluteImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  
+  // If already absolute URL (http/https), return as is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // If starts with /media/, prepend backend URL
+  if (imageUrl.startsWith('/media/')) {
+    const backendUrl = api.baseUrl.replace('/api', '');
+    return `${backendUrl}${imageUrl}`;
+  }
+  
+  // If relative path, try to construct absolute URL
+  if (imageUrl.startsWith('/')) {
+    const backendUrl = api.baseUrl.replace('/api', '');
+    return `${backendUrl}${imageUrl}`;
+  }
+  
+  // Return as is for relative paths (like ../assets/img/placeholder.jpg)
+  return imageUrl;
+};
+
 export const createProductCard = (product) => {
   // Use product's hero image or first variant image
   let imageUrl = product.hero_media_url || product.hero_media;
@@ -226,6 +251,9 @@ export const createProductCard = (product) => {
     const firstImage = product.images.find(img => img.is_primary) || product.images[0];
     imageUrl = firstImage.image_url || firstImage.image;
   }
+  
+  // Convert to absolute URL if needed
+  imageUrl = getAbsoluteImageUrl(imageUrl);
   
   // Fallback to placeholder
   if (!imageUrl) {
@@ -256,7 +284,7 @@ export const createProductCard = (product) => {
   return `
     <article class="product-card" data-id="${productId}">
       <div class="product-media">
-        <img src="${imageUrl}" alt="${title}" onerror="this.src='../assets/img/placeholder.jpg'" />
+        <img src="${imageUrl}" alt="${title}" onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
       </div>
       <div class="product-meta">
         <h4>${title}</h4>
