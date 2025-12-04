@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #000000;
+            color: #FFFFFF;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #E6E6E6;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        button {
+            background: #000000;
+            color: #FFFFFF;
+            border: 1px solid #000000;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #333333;
+            border-color: #333333;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #E53935;
+        }
+        pre {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #E6E6E6;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 API Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Backend Connection</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Registration Endpoint</h2>
+        <button onclick="testRegistration()">Test Registration</button>
+        <div id="registration-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Current API Configuration</h2>
+        <pre id="api-config"></pre>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        
+        document.getElementById('api-config').textContent = `API Base URL: ${API_BASE}\n\nMake sure:\n1. Backend server is running on port 8000\n2. Run: cd backend && python manage.py runserver\n3. Check browser console (F12) for detailed errors`;
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = '<p>Testing connection...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/settings/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<p class="success">✅ Connection successful!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Connection failed: HTTP ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Connection failed: ${error.message}</p>
+                    <p>Possible issues:</p>
+                    <ul>
+                        <li>Backend server is not running</li>
+                        <li>Backend is running on a different port</li>
+                        <li>CORS is blocking the request</li>
+                        <li>Firewall is blocking the connection</li>
+                    </ul>
+                    <p><strong>Solution:</strong> Make sure to run <code>python manage.py runserver</code> in the backend folder</p>`;
+            }
+        }
+
+        async function testRegistration() {
+            const resultDiv = document.getElementById('registration-result');
+            resultDiv.innerHTML = '<p>Testing registration...</p>';
+            
+            const testData = {
+                username: 'testuser' + Date.now(),
+                email: 'test' + Date.now() + '@example.com',
+                password: 'testpass123'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json().catch(() => ({}));
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p class="success">✅ Registration endpoint is working!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Registration failed: HTTP ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Registration request failed: ${error.message}</p>
+                    <p>Error details:</p>
+                    <pre>${error.stack || error.toString()}</pre>`;
+            }
+        }
+
+        // Auto-test connection on load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 500);
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-requires-auth="true">
+    <header data-component="navbar"></header>
+    <main>
+      <section class="cart-grid">
+        <form class="form-card" id="checkout-form">
+          <p class="badge">Luxury delivery</p>
+          <h1>Shipping Address</h1>
+          
+          <div class="form-group">
+            <label for="name">Name *</label>
+            <input type="text" id="name" name="name" required placeholder="Full Name" />
+          </div>
+          
+          <div class="form-group">
+            <label for="phone_number">Phone Number *</label>
+            <input type="tel" id="phone_number" name="phone_number" required placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" />
+          </div>
+          
+          <div class="form-group">
+            <label for="address">Address *</label>
+            <textarea id="address" name="address" required placeholder="House/Building number, Street, Area"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="street_name">Street Name *</label>
+            <input type="text" id="street_name" name="street_name" required placeholder="Street/Road Name" />
+          </div>
+          
+          <div class="form-group">
+            <label for="city_town">City/Town *</label>
+            <input type="text" id="city_town" name="city_town" required placeholder="City or Town" />
+          </div>
+          
+          <div class="form-group">
+            <label for="district">District *</label>
+            <input type="text" id="district" name="district" required placeholder="District" />
+          </div>
+          
+          <div class="form-group">
+            <label for="pin_code">Pin Code *</label>
+            <input type="text" id="pin_code" name="pin_code" required placeholder="6-digit PIN code" pattern="[0-9]{6}" maxlength="6" />
+          </div>
+          
+          <button class="btn" type="submit">Place Order</button>
+          <p id="checkout-error" style="color:var(--danger);margin-top:1rem"></p>
+        </form>
+        <aside class="form-card" id="checkout-summary"></aside>
+      </section>
+    </main>
+    <footer data-component="footer"></footer>
+    <script type="module" src="../assets/js/checkout.js"></script>
+  </body>
+</html>
+

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-auth="login">
+    <header data-component="navbar"></header>
+    <main>
+      <section class="login-section">
+        <div class="form-card glass-card" style="text-align:center;">
+          <p class="badge">Customer Access</p>
+          <h1 class="login-title">Sign in to continue</h1>
+          <form id="login-form" class="auth-form">
+            <div class="form-group">
+              <label for="login-username">Username</label>
+              <input id="login-username" name="username" required placeholder="luxurylover" />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" required />
+            </div>
+            <button class="btn" type="submit">Login</button>
+          </form>
+          <p style="margin-top:1rem;color:var(--muted)">No account?
+            <a href="register.html" style="color:var(--gold)">Register</a>
+          </p>
+          <p id="login-error" style="color:var(--danger);margin-top:1rem"></p>
+        </div>
+      </section>
+    </main>
+    <footer data-component="footer"></footer>
+    <script type="module">
+      import { mountNavbar, mountFooter } from '../assets/js/components.js';
+      (async () => {
+        await mountNavbar();
+        await mountFooter();
+      })();
+    </script>
+    <script type="module" src="../assets/js/auth.js"></script>
+  </body>
+</html>
+

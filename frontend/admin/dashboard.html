@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-admin="dashboard">
+    <div class="admin-grid">
+      <aside class="sidebar" data-admin-nav></aside>
+      <main class="admin-content">
+        <!-- Summary Stats Cards -->
+        <section class="stats-grid" id="dashboard-stats"></section>
+        
+        <!-- Analytics Sections -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:1.5rem;margin-top:1.5rem;">
+          <!-- Revenue Analytics -->
+          <section class="glass-card">
+            <h2 style="color:var(--white);font-size:1.5rem;margin-bottom:1rem;border-bottom:2px solid var(--light-grey);padding-bottom:0.5rem;">Revenue Analytics</h2>
+            <div id="revenue-analytics"></div>
+          </section>
+          
+          <!-- Most Ordered Products -->
+          <section class="glass-card">
+            <h2 style="color:var(--white);font-size:1.5rem;margin-bottom:1rem;border-bottom:2px solid var(--light-grey);padding-bottom:0.5rem;">Most Ordered Products</h2>
+            <div id="top-products"></div>
+          </section>
+        </div>
+        
+        <!-- Recent Orders -->
+        <section class="glass-card" style="margin-top:1.5rem;" id="dashboard-orders"></section>
+      </main>
+    </div>
+    <script type="module" src="../assets/js/admin.js"></script>
+  </body>
+</html>
+

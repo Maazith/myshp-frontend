@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EdithCloths | Luxury Fashion</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <header data-component="navbar"></header>
+    <main>
+      <section class="hero glass-card" id="banner-slider">
+        <div class="hero-slide active" style="background-image: linear-gradient(120deg,#181818,#0b0b0b)">
+          <div class="hero-overlay">
+            <p class="badge">EdithCloths</p>
+            <h1>Discover couture crafted for connoisseurs.</h1>
+            <p>Shop limited releases for men and women with bespoke tailoring.</p>
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap">
+              <a class="btn" href="men.html">Shop Men</a>
+              <a class="btn ghost" href="women.html">Shop Women</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Men</h2>
+          <a class="btn ghost" href="men.html">View All</a>
+        </div>
+        <div class="horizontal-scroll" id="men-carousel"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Women</h2>
+          <a class="btn ghost" href="women.html">View All</a>
+        </div>
+        <div class="horizontal-scroll" id="women-carousel"></div>
+      </section>
+    </main>
+    <footer data-component="footer"></footer>
+    <script type="module" src="../assets/js/home.js"></script>
+  </body>
+</html>
+

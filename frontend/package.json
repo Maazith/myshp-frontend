@@ -1,0 +1,13 @@
+{
+  "name": "edithcloths-frontend",
+  "version": "1.0.0",
+  "description": "EdithCloths E-commerce Frontend",
+  "scripts": {
+    "dev": "echo 'Use Live Server or similar for local development'",
+    "build": "echo 'No build step needed for static site'"
+  },
+  "keywords": ["ecommerce", "frontend"],
+  "author": "",
+  "license": "ISC"
+}
+

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Products | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <style>
+      /* Ensure dropdown is visible with dark theme */
+      #filter-gender {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #FFFFFF !important;
+        border: 1px solid var(--light-grey) !important;
+        padding: 0.75rem 2.5rem 0.75rem 1rem !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FFFFFF' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1rem center !important;
+        cursor: pointer !important;
+      }
+      
+      #filter-gender:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: #FFFFFF !important;
+      }
+      
+      #filter-gender:focus {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: #FFFFFF !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+      }
+      
+      /* Style dropdown options (note: browser limitations may apply) */
+      #filter-gender option {
+        background: #000000 !important;
+        color: #FFFFFF !important;
+        padding: 0.75rem 1rem !important;
+      }
+      
+      /* Ensure all select elements in admin match theme */
+      [data-admin] select {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #FFFFFF !important;
+      }
+      
+      [data-admin] select option {
+        background: #000000 !important;
+        color: #FFFFFF !important;
+      }
+    </style>
+  </head>
+  <body data-admin="products">
+    <div class="admin-grid">
+      <aside class="sidebar" data-admin-nav></aside>
+      <main class="admin-content">
+        <section class="glass-card">
+          <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <h1>Products</h1>
+            <a class="btn" href="add_product.html">+ Add Product</a>
+          </div>
+          
+          <!-- Search and Filter Bar -->
+          <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="search-products" placeholder="🔍 Search products..." style="flex:1;min-width:250px;padding:0.75rem;background:rgba(255,255,255,0.05);border:1px solid var(--light-grey);border-radius:var(--radius);color:var(--white);" />
+            <select id="filter-gender">
+              <option value="">All Genders</option>
+              <option value="MEN">Men</option>
+              <option value="WOMEN">Women</option>
+              <option value="UNISEX">Unisex</option>
+            </select>
+            <button id="clear-filters" class="btn ghost small">Clear Filters</button>
+          </div>
+
+          <!-- Category Tabs with Product Counts -->
+          <div id="category-tabs" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--light-grey);">
+            <!-- Category tabs will be dynamically inserted here -->
+          </div>
+
+          <!-- Products Table -->
+          <div id="products-table"></div>
+          
+          <!-- Stats Summary -->
+          <div id="products-stats" style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--light-grey);display:flex;gap:2rem;flex-wrap:wrap;">
+            <!-- Stats will be dynamically inserted here -->
+          </div>
+        </section>
+        
+        <section class="glass-card" style="margin-top:1.5rem;">
+          <h2>Categories</h2>
+          <form id="category-form" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem">
+            <input name="name" placeholder="Category name" required style="flex:1;min-width:200px;" />
+            <button class="btn small" type="submit">Add Category</button>
+          </form>
+          <ul id="categories-list" style="margin-top:1rem;list-style:none;padding:0;"></ul>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="../assets/js/admin.js"></script>
+  </body>
+</html>
+

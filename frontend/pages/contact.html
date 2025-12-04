@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <style>
+      .contact-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+      .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+      .chatbox-card {
+        background: var(--black);
+        border: 1px solid var(--light-grey);
+        border-radius: var(--radius);
+        padding: 2rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+      }
+      .chatbox-card:hover {
+        transform: translateY(-8px);
+        border-color: #FFFFFF;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+      .chatbox-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      .chatbox-title {
+        color: #FFFFFF;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+      }
+      .chatbox-desc {
+        color: #E6E6E6;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+      .whatsapp-btn {
+        background: #25D366;
+        color: #FFFFFF;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+      .whatsapp-btn:hover {
+        background: #20BA5A;
+        transform: scale(1.05);
+      }
+      .instagram-btn {
+        background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+        color: #FFFFFF;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+      .instagram-btn:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+      .contact-info {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--light-grey);
+        border-radius: var(--radius);
+        padding: 2rem;
+        margin-top: 2rem;
+      }
+      .contact-info h3 {
+        color: #FFFFFF;
+        margin-bottom: 1rem;
+      }
+      .contact-info p {
+        color: #E6E6E6;
+        margin-bottom: 0.5rem;
+        line-height: 1.8;
+      }
+      .bulk-order-notice {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin: 2rem 0;
+        text-align: center;
+      }
+      .bulk-order-notice p {
+        color: #FFD700;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        line-height: 1.6;
+      }
+      .bulk-order-notice p strong {
+        color: #FFFFFF;
+      }
+    </style>
+  </head>
+  <body>
+    <header data-component="navbar"></header>
+    <main>
+      <section class="section">
+        <div class="contact-container">
+          <div class="form-card" style="text-align:center">
+            <p class="badge">Get in Touch</p>
+            <h1>Contact Us</h1>
+            <p style="color:#E6E6E6;margin-top:1rem;font-size:1.1rem;">
+              Have questions? We're here to help! Reach out to us via WhatsApp or Instagram.
+            </p>
+          </div>
+
+          <div class="bulk-order-notice">
+            <p>
+              📦 <strong>For Bulk Orders:</strong> Please contact us directly on WhatsApp or Instagram for special pricing and custom orders.
+            </p>
+          </div>
+
+          <div class="contact-grid">
+            <!-- WhatsApp Chatbox -->
+            <div class="chatbox-card" id="whatsapp-chatbox">
+              <div class="chatbox-icon">💬</div>
+              <h2 class="chatbox-title">WhatsApp</h2>
+              <p class="chatbox-desc">
+                Chat with us instantly on WhatsApp for quick support and order updates.
+              </p>
+              <a href="#" class="whatsapp-btn" id="whatsapp-link" target="_blank" rel="noreferrer">
+                Open WhatsApp
+              </a>
+            </div>
+
+            <!-- Instagram Chatbox -->
+            <div class="chatbox-card" id="instagram-chatbox">
+              <div class="chatbox-icon">📸</div>
+              <h2 class="chatbox-title">Instagram</h2>
+              <p class="chatbox-desc">
+                Follow us on Instagram for updates, fashion tips, and DM us for support.
+              </p>
+              <a href="#" class="instagram-btn" id="instagram-link" target="_blank" rel="noreferrer">
+                Visit Instagram
+              </a>
+            </div>
+          </div>
+
+          <div class="contact-info">
+            <h3>📧 Other Ways to Reach Us</h3>
+            <p id="contact-email"><strong>Email:</strong> Loading...</p>
+            <p id="contact-phone"><strong>Phone:</strong> Loading...</p>
+            <p id="contact-address"><strong>Address:</strong> Loading...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer data-component="footer"></footer>
+    <script type="module" src="../assets/js/contact.js"></script>
+    <script type="module">
+      import { mountNavbar, mountFooter } from '../assets/js/components.js';
+      window.addEventListener('DOMContentLoaded', async () => {
+        await mountNavbar();
+        await mountFooter();
+      });
+    </script>
+  </body>
+</html>
+

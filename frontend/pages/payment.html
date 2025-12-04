@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-requires-auth="true">
+    <header data-component="navbar"></header>
+    <main>
+      <section class="section">
+        <div class="form-card payment-card">
+          <p class="badge">UPI Payment</p>
+          <h1>Transfer via GPay</h1>
+          <p id="payment-amount"></p>
+          <p class="upi-id" id="upi-id-display">UPI ID: maazith.md@oksbi</p>
+          <div class="qr-box">
+            <img id="upi-qr" src="../assets/images/qr.jpg" alt="UPI QR code" />
+          </div>
+          <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+            <a class="btn" id="upi-link" target="_blank" rel="noreferrer">Pay with GPay</a>
+          </div>
+          <form id="payment-proof" style="margin-top:2rem">
+            <div class="form-group">
+              <label for="reference">UPI Reference ID</label>
+              <input id="reference" name="reference_id" required />
+            </div>
+            <div class="form-group">
+              <label for="proof">Upload Payment Screenshot *</label>
+              <input id="proof" name="proof_file" type="file" accept="image/*" required />
+              <small style="color:#E6E6E6;font-size:0.85rem;display:block;margin-top:0.5rem;">Please upload a screenshot of your payment confirmation</small>
+            </div>
+            <button class="btn" type="submit">Submit Proof</button>
+          </form>
+          <p id="payment-error" style="color:var(--danger);margin-top:1rem"></p>
+        </div>
+      </section>
+    </main>
+    <footer data-component="footer"></footer>
+    <script type="module" src="../assets/js/payment.js"></script>
+  </body>
+</html>
+

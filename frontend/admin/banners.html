@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banners | EdithCloths Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-admin="banners">
+    <div class="admin-grid">
+      <aside class="sidebar" data-admin-nav></aside>
+      <main class="admin-content">
+        <section class="glass-card">
+          <h1>Homepage Banners</h1>
+          <form id="banner-form" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="banner-title">Title</label>
+              <input id="banner-title" name="title" required />
+            </div>
+            <div class="form-group">
+              <label for="banner-subtitle">Subtitle (Optional)</label>
+              <input id="banner-subtitle" name="subtitle" />
+            </div>
+            <div class="form-group">
+              <label for="banner-media">Banner Image *</label>
+              <input id="banner-media" name="media" type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" required />
+              <small style="color:#E6E6E6;font-size:0.85rem;display:block;margin-top:0.5rem;">Select an image file from your device (PNG, JPG, JPEG, GIF, WEBP)</small>
+              <div id="file-preview" style="margin-top:1rem;display:none;">
+                <img id="preview-image" src="" alt="Preview" style="max-width:300px;max-height:200px;border-radius:var(--radius);border:1px solid var(--light-grey);" />
+                <p id="file-info" style="color:#E6E6E6;font-size:0.85rem;margin-top:0.5rem;"></p>
+              </div>
+            </div>
+            <button class="btn" type="submit">Upload Banner</button>
+            <p id="banner-message" style="margin-top:1rem"></p>
+          </form>
+        </section>
+        <section class="glass-card" id="banners-list"></section>
+      </main>
+    </div>
+    <script type="module" src="../assets/js/admin.js"></script>
+  </body>
+</html>
+

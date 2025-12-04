@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Product | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body data-admin="add-product">
+    <div class="admin-grid">
+      <aside class="sidebar" data-admin-nav></aside>
+      <main class="admin-content">
+        <section class="glass-card">
+          <h1>Create Product</h1>
+          <form id="product-form" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="title">Title</label>
+              <input id="title" name="title" required />
+            </div>
+            <div class="form-group">
+              <label for="category-id">Category</label>
+              <select id="category-id" name="category_id" required></select>
+            </div>
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender">
+                <option value="MEN">Men</option>
+                <option value="WOMEN">Women</option>
+                <option value="UNISEX">Unisex</option>
+              </select>
+              <small style="color:#E6E6E6;font-size:0.85rem;display:block;margin-top:0.5rem;">Note: Unisex products will appear on both Men's and Women's pages</small>
+            </div>
+            
+            <!-- Variants Section -->
+            <div class="form-group" style="margin-top:2rem;padding-top:2rem;border-top:1px solid var(--light-grey);">
+              <h3 style="color:#FFFFFF;margin-bottom:1rem;">Product Variants (Colors & Sizes)</h3>
+              <p style="color:#E6E6E6;font-size:0.9rem;margin-bottom:1.5rem;">Add multiple colors and sizes. Upload images for each color.</p>
+              <div id="variants-container"></div>
+              <button type="button" class="btn ghost" id="add-variant-btn" style="margin-top:1rem;">+ Add Color Variant</button>
+            </div>
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" rows="5"></textarea>
+            </div>
+            <label style="display:flex;align-items:center;gap:.5rem">
+              <input type="checkbox" name="is_featured" />
+              Featured
+            </label>
+            <button class="btn" type="submit">Save Product</button>
+            <p id="product-message" style="margin-top:1rem"></p>
+          </form>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="../assets/js/admin.js"></script>
+  </body>
+</html>
+

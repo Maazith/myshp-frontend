@@ -1,0 +1,7 @@
+# Ignore files that shouldn't be deployed
+*.md
+README.md
+TESTING.md
+LANDING_PAGE_GUIDE.md
+test-api.html
+
