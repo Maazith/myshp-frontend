@@ -44,6 +44,42 @@ const requireAdmin = async () => {
 const mountAdminNav = (activeKey) => {
   const navHost = document.querySelector('[data-admin-nav]');
   if (!navHost) return;
+  
+  // Create mobile toggle button
+  const adminGrid = document.querySelector('.admin-grid');
+  if (adminGrid && !document.querySelector('.admin-mobile-toggle')) {
+    const mobileToggle = document.createElement('button');
+    mobileToggle.className = 'admin-mobile-toggle';
+    mobileToggle.innerHTML = '☰';
+    mobileToggle.setAttribute('aria-label', 'Toggle menu');
+    adminGrid.insertBefore(mobileToggle, adminGrid.firstChild);
+    
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+    
+    // Toggle sidebar on mobile
+    mobileToggle.addEventListener('click', () => {
+      navHost.classList.toggle('mobile-open');
+      overlay.classList.toggle('active');
+    });
+    
+    // Close sidebar when clicking overlay
+    overlay.addEventListener('click', () => {
+      navHost.classList.remove('mobile-open');
+      overlay.classList.remove('active');
+    });
+    
+    // Close sidebar when clicking a link
+    navHost.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A' || e.target.closest('a')) {
+        navHost.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+      }
+    });
+  }
+  
   navHost.innerHTML = `
     <div class="logo" style="margin-bottom:2rem">
       <span>Admin</span>
