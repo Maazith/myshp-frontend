@@ -1,11 +1,20 @@
 import { api } from './api.js';
 
+// Get base path for navigation links
+const getBasePath = () => {
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/pages/') || currentPath.includes('pages/')) {
+    return ''; // Already in pages directory
+  }
+  return 'pages/'; // Need to go to pages directory
+};
+
 const NAV_LINKS = [
-  { href: 'index.html', label: 'Home' },
-  { href: 'men.html', label: 'Men' },
-  { href: 'women.html', label: 'Women' },
-  { href: 'myorders.html', label: 'My Orders', auth: true },
-  { href: 'contact.html', label: 'Contact' },
+  { href: 'index.html', label: 'Home', basePath: '' },
+  { href: 'men.html', label: 'Men', basePath: 'pages/' },
+  { href: 'women.html', label: 'Women', basePath: 'pages/' },
+  { href: 'myorders.html', label: 'My Orders', auth: true, basePath: 'pages/' },
+  { href: 'contact.html', label: 'Contact', basePath: 'pages/' },
 ];
 
 export const formatCurrency = (value) =>
@@ -22,22 +31,21 @@ export const orderStages = [
 ];
 
 const isActive = (href) => {
-  const current = window.location.pathname.split('/').pop();
-  return current === href ? 'active' : '';
+  const currentPath = window.location.pathname;
+  const current = currentPath.split('/').pop() || '';
+  // Handle both with and without .html extension
+  const currentPage = current.replace('.html', '');
+  const hrefPage = href.replace('.html', '');
+  
+  // Also check if we're on the home page
+  if (href === 'index.html' && (currentPath === '/' || current === '' || current === 'index.html')) {
+    return 'active';
+  }
+  
+  return currentPage === hrefPage || current === href ? 'active' : '';
 };
 
-const authLinks = () => {
-  if (api.accessToken) {
-    return `
-      <button class="btn ghost" id="nav-logout">Logout</button>
-      <a class="icon-link" href="cart.html" title="Cart">
-        &#128717;
-      </a>`;
-  }
-  return `
-    <a class="btn" href="login.html">Login</a>
-    <a class="btn ghost" href="register.html">Register</a>`;
-};
+// authLinks function removed - now handled inline in mountNavbar
 
 export const mountNavbar = async () => {
   const target = document.querySelector('[data-component="navbar"]');
@@ -77,22 +85,100 @@ export const mountNavbar = async () => {
   // Hide auth actions (logout/cart) on auth pages
   const showAuthActions = !isAuthPage;
   
+  // Determine correct href paths based on current location
+  const getLinkHref = (link) => {
+    const currentPath = window.location.pathname;
+    const isInPages = currentPath.includes('/pages/') || currentPath.includes('pages/');
+    const isInAdmin = currentPath.includes('/admin/') || currentPath.includes('admin/');
+    const isRoot = !isInPages && !isInAdmin && (currentPath === '/' || currentPath.endsWith('index.html') || currentPath.endsWith('/'));
+    
+    if (link.href === 'index.html') {
+      // For home, go to root index.html
+      if (isRoot) return 'index.html';
+      if (isInPages) return '../index.html';
+      if (isInAdmin) return '../index.html';
+      return 'index.html';
+    }
+    
+    // For other pages
+    if (isInPages) {
+      return link.href; // Already in pages directory
+    } else if (isInAdmin) {
+      return `../pages/${link.href}`; // Go up from admin to pages
+    } else {
+      return `pages/${link.href}`; // From root, go to pages
+    }
+  };
+  
+  const getAuthLinkHref = (href) => {
+    const currentPath = window.location.pathname;
+    const isInPages = currentPath.includes('/pages/') || currentPath.includes('pages/');
+    const isInAdmin = currentPath.includes('/admin/') || currentPath.includes('admin/');
+    
+    if (isInPages) {
+      return href; // Already in pages directory
+    } else if (isInAdmin) {
+      return `../pages/${href}`; // Go up from admin to pages
+    } else {
+      return `pages/${href}`; // From root, go to pages
+    }
+  };
+  
   target.innerHTML = `
     <nav class="nav">
-      <div class="logo">
-        <span>EdithCloths</span>
+      <div class="nav-brand">
+        <div class="logo">
+          <span>EdithCloths</span>
+        </div>
+        ${showNavLinks ? `<button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>` : ''}
       </div>
-      ${showNavLinks ? `<div class="nav-links">
+      ${showNavLinks ? `<div class="nav-links" id="nav-links">
         ${NAV_LINKS.map((link) => {
           if (link.auth && !api.accessToken) return '';
-          return `<a class="${isActive(link.href)}" href="${link.href}">${link.label}</a>`;
+          return `<a class="${isActive(link.href)}" href="${getLinkHref(link)}">${link.label}</a>`;
         }).join('')}
       </div>` : ''}
       ${showAuthActions ? `<div class="nav-actions">
-        ${authLinks()}
+        ${api.accessToken ? `
+          <button class="btn ghost" id="nav-logout">Logout</button>
+          <a class="icon-link" href="${getAuthLinkHref('cart.html')}" title="Cart">&#128717;</a>
+        ` : `
+          <a class="btn" href="${getAuthLinkHref('login.html')}">Login</a>
+          <a class="btn ghost" href="${getAuthLinkHref('register.html')}">Register</a>
+        `}
       </div>` : ''}
     </nav>
   `;
+  
+  // Mobile menu toggle
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const navLinks = document.getElementById('nav-links');
+  if (mobileMenuBtn && navLinks) {
+    mobileMenuBtn.addEventListener('click', () => {
+      navLinks.classList.toggle('mobile-open');
+      mobileMenuBtn.classList.toggle('active');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+        navLinks.classList.remove('mobile-open');
+        mobileMenuBtn.classList.remove('active');
+      }
+    });
+    
+    // Close menu when clicking a link
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('mobile-open');
+        mobileMenuBtn.classList.remove('active');
+      });
+    });
+  }
   const logoutBtn = document.getElementById('nav-logout');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
