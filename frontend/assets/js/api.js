@@ -1,7 +1,22 @@
-// API Base URL - Production Render backend URL
-const API_BASE = 'https://myshp-backend.onrender.com/api';
-// For local development, uncomment below and comment above:
-// const API_BASE = 'http://127.0.0.1:8000/api';
+// API Base URL - Use environment variable or fallback to production URL
+// Vercel: Set NEXT_PUBLIC_API_BASE_URL or VERCEL_ENV_API_BASE_URL in environment variables
+// For local development, set window.API_BASE_URL before loading this script
+const API_BASE = (() => {
+  // Check for environment variable (Vercel sets this)
+  if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  // Check for window variable (can be set in index.html)
+  if (typeof window !== 'undefined' && window.API_BASE_URL) {
+    return window.API_BASE_URL;
+  }
+  // Check for Vercel environment variable
+  if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
+    return window.VERCEL_ENV_API_BASE_URL;
+  }
+  // Production fallback
+  return 'https://myshp-backend.onrender.com/api';
+})();
 const ACCESS_KEY = 'edithcloths_token';
 const REFRESH_KEY = 'edithcloths_refresh';
 const USER_KEY = 'edithcloths_user';

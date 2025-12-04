@@ -1273,12 +1273,23 @@ const handleAdminLogin = () => {
       
       const payload = await api.login({ username, password });
       
-      if (!payload.user?.is_staff) {
-        if (errorEl) errorEl.textContent = 'Not authorized as admin. This account does not have admin privileges.';
-        api.logout();
+      // Check if user data is returned
+      if (!payload || !payload.user) {
+        throw new Error('Login successful but user data not returned. Please try again.');
+      }
+      
+      // Check if user has admin privileges
+      if (!payload.user.is_staff) {
+        api.logout(); // Clear invalid token
+        if (errorEl) {
+          errorEl.textContent = 'Access denied. This account does not have admin privileges. Please contact an administrator.';
+          errorEl.style.display = 'block';
+          errorEl.style.color = 'var(--danger)';
+        }
         return;
       }
       
+      // Success - redirect to dashboard
       window.location.href = 'dashboard.html';
     } catch (err) {
       if (errorEl) {
@@ -1286,7 +1297,7 @@ const handleAdminLogin = () => {
         
         // More specific error messages
         if (errorMsg.includes('Failed to connect') || errorMsg.includes('fetch')) {
-          errorMsg = 'Cannot connect to server. Make sure the backend is running at http://127.0.0.1:8000';
+          errorMsg = 'Cannot connect to server. Please check your internet connection and ensure the backend is running.';
         } else if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('No active account')) {
           errorMsg = 'Invalid username or password. Please check your credentials.';
         } else if (errorMsg.includes('404')) {

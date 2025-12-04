@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Welcome to EdithCloths</title>
     <link rel="stylesheet" href="assets/css/style.css" />
+    <script>
+        // Set API Base URL from environment variable (Vercel) or use production default
+        // This allows Vercel to override the API URL via environment variables
+        window.API_BASE_URL = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+    </script>
     <style>
       .landing-header {
         position: fixed;
