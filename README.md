@@ -1,225 +1,122 @@
-# Frontend Testing Guide
+# EdithCloths - E-Commerce Platform
 
-## Quick Start
+A modern e-commerce platform with separate frontend and backend deployments.
 
-### 1. Update API Base URL
+## 📁 Project Structure
 
-Before testing, update the API base URL in `assets/js/api.js`:
-
-```javascript
-const API_BASE = "http://your-django-backend-url.com";  // Replace with your backend URL
+```
+myshp/
+├── frontend/          # Frontend application (Vercel)
+│   ├── admin/         # Admin panel pages
+│   ├── assets/         # CSS, JS, images
+│   ├── pages/         # User-facing pages
+│   └── index.html     # Landing page
+│
+├── backend/           # Django backend (Render)
+│   ├── edithclothes/  # Django project settings
+│   ├── shop/          # Main app
+│   ├── templates/     # Django templates
+│   ├── media/         # User uploads
+│   └── staticfiles/   # Collected static files
+│
+└── docs/              # Documentation files
 ```
 
-**For local development:**
-```javascript
-const API_BASE = "http://127.0.0.1:8000";  // Default Django dev server
-```
+## 🚀 Quick Start
 
-### 2. Serve the Frontend
+### Backend (Django)
 
-**Option A: Using Live Server (VS Code Extension)**
-1. Right-click on `index.html`
-2. Select "Open with Live Server"
-3. Frontend will be available at `http://127.0.0.1:5500` (or similar)
-
-**Option B: Using Python HTTP Server**
 ```bash
-cd frontend
-python -m http.server 8001
-```
-Access at: `http://127.0.0.1:8001`
-
-**Option C: Using Node.js http-server**
-```bash
-npx http-server frontend -p 8001
-```
-
-### 3. Start Your Django Backend
-
-Make sure your Django backend is running:
-```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python manage.py migrate
 python manage.py runserver
 ```
 
-## Testing Checklist
+Backend runs on: `http://127.0.0.1:8000`
 
-### User Side Testing
+### Frontend
 
-#### ✅ Authentication
-- [ ] **Sign Up**: Go to `/signup.html`
-  - Fill all fields
-  - Submit form
-  - Should redirect to homepage
-  
-- [ ] **Login**: Go to `/login.html`
-  - Enter email and password
-  - Should redirect to homepage
-  - Check if user menu appears in header
+The frontend is a static site. Serve it using:
+- Live Server (VS Code extension)
+- Python: `python -m http.server 8001`
+- Or any static file server
 
-- [ ] **Logout**: Click logout button
-  - Should clear tokens and redirect
+Frontend runs on: `http://127.0.0.1:5500` (Live Server) or `http://127.0.0.1:8001`
 
-#### ✅ Products
-- [ ] **Homepage** (`/index.html`):
-  - Categories should load
-  - Featured products should display
-  - Product cards should be clickable
+## 🌐 Deployment
 
-- [ ] **Product List** (`/product-list.html`):
-  - All products should load
-  - Search functionality works
-  - Category filter works
-  - Click product card → goes to detail page
+### Backend (Render)
+- **URL**: `https://myshp-backend.onrender.com`
+- **Auto-deploys** from `main` branch
+- Uses `render.yaml` for configuration
 
-- [ ] **Product Detail** (`/product-detail.html?id=1`):
-  - Product images display
-  - Variant selection works (if available)
-  - Quantity selector works
-  - "Add to Cart" button works
+### Frontend (Vercel)
+- **URL**: `https://myshp-frontend.vercel.app`
+- **Auto-deploys** from `main` branch
+- Uses `vercel.json` for configuration
 
-#### ✅ Cart
-- [ ] **Cart Page** (`/cart.html`):
-  - Added products appear
-  - Quantity increase/decrease works
-  - Remove item works
-  - Total calculation is correct
-  - "Proceed to Checkout" button works
+## 📋 Key URLs
 
-#### ✅ Checkout
-- [ ] **Checkout** (`/checkout.html`):
-  - Shipping form displays
-  - Apply coupon works
-  - Order summary updates
-  - Place order works → redirects to payment
+### Backend API
+- API Root: `https://myshp-backend.onrender.com/`
+- Admin: `https://myshp-backend.onrender.com/admin/`
+- API: `https://myshp-backend.onrender.com/api/`
 
-#### ✅ Payment
-- [ ] **Payment** (`/payment.html`):
-  - UPI QR code displays (if endpoint returns it)
-  - Payment reference input works
-  - Submit payment → redirects to success page
+### Frontend
+- Homepage: `https://myshp-frontend.vercel.app/`
+- Admin Login: `https://myshp-frontend.vercel.app/admin/login.html`
 
-#### ✅ Order Success
-- [ ] **Order Success** (`/order-success.html`):
-  - Success message displays
-  - Order ID shows (if passed in URL)
+## 🎨 Features
 
-### Admin Side Testing
+- **Admin Theme System**: Light, Dark, and Auto themes
+- **Product Management**: Full CRUD operations
+- **Shopping Cart**: Add, update, remove items
+- **Order Management**: Complete order flow
+- **Payment Integration**: UPI payment system
+- **Responsive Design**: Works on all devices
 
-#### ✅ Admin Authentication
-- [ ] **Admin Login** (`/admin/login.html`):
-  - Enter admin credentials
-  - Should redirect to dashboard
+## 📚 Documentation
 
-#### ✅ Admin Dashboard
-- [ ] **Dashboard** (`/admin/dashboard.html`):
-  - Stats display (orders, products, sales)
-  - Recent orders table shows
+See `docs/` directory for detailed documentation:
+- `ALL_URLS.md` - Complete list of all URLs
+- `DEPLOYMENT_CHECKLIST.md` - Deployment guide
+- `DEPLOY_ADMIN_THEME.md` - Admin theme setup
 
-#### ✅ Product Management
-- [ ] **Products List** (`/admin/products.html`):
-  - All products display in table
-  - Edit button works → goes to edit page
-  - Delete button works (with confirmation)
+## 🔧 Development
 
-- [ ] **Add Product** (`/admin/add-product.html`):
-  - Form submission works
-  - Image upload works
-  - Variants can be added
-  - Redirects to products list after success
+### Backend Setup
+1. Install dependencies: `pip install -r requirements.txt`
+2. Run migrations: `python manage.py migrate`
+3. Create superuser: `python manage.py createsuperuser`
+4. Start server: `python manage.py runserver`
 
-- [ ] **Edit Product** (`/admin/edit-product.html?id=1`):
-  - Product data loads in form
-  - Updates work
-  - New images can be added
+### Frontend Setup
+1. Update API URL in `frontend/assets/js/api.js`
+2. Serve the frontend directory
+3. Open in browser
 
-#### ✅ Order Management
-- [ ] **Orders List** (`/admin/orders.html`):
-  - All orders display
-  - "Mark as Paid" button works
-  - Order status updates
+## 📝 Environment Variables
 
-## Common Issues & Solutions
+### Backend (Render)
+- `SECRET_KEY` - Django secret key
+- `DEBUG` - Debug mode (False for production)
+- `DATABASE_URL` - PostgreSQL connection string
+- `DJANGO_SUPERUSER_USERNAME` - Admin username
+- `DJANGO_SUPERUSER_EMAIL` - Admin email
+- `DJANGO_SUPERUSER_PASSWORD` - Admin password
 
-### Issue: CORS Errors
-**Solution**: Add CORS headers in Django settings:
-```python
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-]
-```
+### Frontend (Vercel)
+- `API_BASE_URL` - Backend API URL (optional)
 
-### Issue: 401 Unauthorized
-**Solution**: 
-- Check if tokens are stored in localStorage
-- Verify API_BASE URL is correct
-- Check Django JWT authentication settings
+## 🛠️ Tech Stack
 
-### Issue: Images Not Loading
-**Solution**: 
-- Check image paths are correct
-- Verify backend serves images correctly
-- Check CORS for image requests
+- **Backend**: Django 4.2, Django REST Framework, PostgreSQL
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+- **Deployment**: Render (Backend), Vercel (Frontend)
 
-### Issue: API Endpoints Not Found (404)
-**Solution**:
-- Verify Django URLs match exactly
-- Check Django server is running
-- Verify API_BASE URL has correct port
+## 📄 License
 
-## Testing with Browser DevTools
-
-### Check Network Requests
-1. Open DevTools (F12)
-2. Go to Network tab
-3. Check API calls:
-   - Should have correct headers (Authorization: Bearer token)
-   - Should return 200 status codes
-   - Check response data
-
-### Check Console for Errors
-1. Open DevTools Console
-2. Look for JavaScript errors
-3. Check for API errors
-
-### Check localStorage
-1. DevTools → Application tab → Local Storage
-2. Verify `access` and `refresh` tokens are stored
-3. Tokens should update after login
-
-## Manual Test Flow
-
-1. **User Journey**:
-   - Sign up → Login → Browse products → Add to cart → Checkout → Payment → Success
-
-2. **Admin Journey**:
-   - Admin login → Dashboard → View products → Add product → View orders → Mark order as paid
-
-## API Endpoint Verification
-
-Make sure these endpoints exist in your Django backend:
-- POST `/api/auth/register/`
-- POST `/api/auth/login/`
-- GET `/api/auth/me/`
-- POST `/api/auth/admin/login/`
-- GET `/api/auth/admin/me/`
-- GET `/api/products/categories/`
-- GET `/api/products/`
-- GET `/api/products/<id>/`
-- GET `/api/cart/`
-- POST `/api/cart/`
-- PATCH `/api/cart/<item_id>/`
-- DELETE `/api/cart/<item_id>/`
-- POST `/api/offers/apply-coupon/`
-- POST `/api/orders/checkout/`
-- POST `/api/orders/confirm-payment/`
-- GET `/api/orders/my/`
-- GET `/api/payments/upi/`
-
-## Notes
-
-- Replace `YOUR_BACKEND_URL` in `api.js` before testing
-- Ensure Django backend is running and accessible
-- Check browser console for any JavaScript errors
-- Verify CORS settings allow frontend origin
-
+Private project - All rights reserved
