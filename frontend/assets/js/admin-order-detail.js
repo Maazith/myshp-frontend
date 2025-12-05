@@ -68,7 +68,8 @@ async function loadOrderDetail() {
       ${order.payment_proof ? `
       <div class="glass-card">
         <h2 style="margin-bottom: 1rem;">Payment Proof</h2>
-        <img src="${order.payment_proof.proof_image}" alt="Payment Proof" style="max-width: 100%; border-radius: var(--radius);">
+        <img src="${order.payment_proof.proof_file_url || order.payment_proof.proof_file || ''}" alt="Payment Proof" style="max-width: 100%; border-radius: var(--radius);" onerror="this.style.display='none'">
+        ${order.payment_proof.reference_id ? `<p style="margin-top: 1rem;"><strong>Reference ID:</strong> ${order.payment_proof.reference_id}</p>` : ''}
       </div>
       ` : ''}
     `;
