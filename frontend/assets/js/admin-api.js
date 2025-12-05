@@ -118,4 +118,12 @@ export const adminApi = {
       method: 'DELETE',
     });
   },
+  
+  // Bulk delete
+  async bulkDelete(type) {
+    return await this.request('/admin/bulk-delete', {
+      method: 'DELETE',
+      body: { type },
+    });
+  },
 };

@@ -50,5 +50,24 @@ window.deleteProduct = async (id) => {
   }
 };
 
+// Delete all products
+document.getElementById('delete-all-products')?.addEventListener('click', async () => {
+  if (!confirm('⚠️ WARNING: This will delete ALL products permanently. This action cannot be undone!\n\nAre you absolutely sure?')) {
+    return;
+  }
+  
+  if (!confirm('This is your last chance. Delete ALL products?')) {
+    return;
+  }
+  
+  try {
+    const result = await adminApi.bulkDelete('products');
+    alert(`Successfully deleted ${result.deleted_count} product(s)`);
+    loadProducts();
+  } catch (error) {
+    alert('Error deleting products: ' + error.message);
+  }
+});
+
 loadProducts();
 

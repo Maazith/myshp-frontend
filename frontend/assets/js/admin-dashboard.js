@@ -7,7 +7,15 @@ if (!adminAuth.requireAuth()) return;
 async function loadDashboard() {
   try {
     const orders = await adminApi.getOrders();
-    if (!orders) return;
+    if (!orders || !Array.isArray(orders)) {
+      console.error('Invalid orders response:', orders);
+      document.getElementById('total-orders').textContent = '0';
+      document.getElementById('pending-orders').textContent = '0';
+      document.getElementById('completed-orders').textContent = '0';
+      document.getElementById('total-revenue').textContent = formatCurrency(0);
+      document.getElementById('recent-orders').innerHTML = '<p style="padding: 1rem; color: var(--text-light);">No orders yet</p>';
+      return;
+    }
     
     const total = orders.length;
     const pending = orders.filter(o => ['PLACED', 'PAYMENT_PENDING', 'PAYMENT_VERIFIED'].includes(o.status)).length;
@@ -35,6 +43,11 @@ async function loadDashboard() {
     document.getElementById('recent-orders').innerHTML = recentHtml;
   } catch (error) {
     console.error('Dashboard load error:', error);
+    document.getElementById('total-orders').textContent = 'Error';
+    document.getElementById('pending-orders').textContent = 'Error';
+    document.getElementById('completed-orders').textContent = 'Error';
+    document.getElementById('total-revenue').textContent = 'Error';
+    document.getElementById('recent-orders').innerHTML = `<p style="padding: 1rem; color: var(--danger);">Error loading dashboard: ${error.message}</p>`;
   }
 }
 
