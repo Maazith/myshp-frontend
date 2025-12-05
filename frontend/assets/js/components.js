@@ -81,8 +81,6 @@ export const mountNavbar = async () => {
   
   // Always show nav links (no auth required)
   const showNavLinks = true;
-  // Always show auth actions (cart, no logout/login buttons)
-  const showAuthActions = true;
   
   // Determine correct href paths based on current location
   const getLinkHref = (link) => {
@@ -106,20 +104,6 @@ export const mountNavbar = async () => {
       return `../pages/${link.href}`; // Go up from admin to pages
     } else {
       return `pages/${link.href}`; // From root, go to pages
-    }
-  };
-  
-  const getAuthLinkHref = (href) => {
-    const currentPath = window.location.pathname;
-    const isInPages = currentPath.includes('/pages/') || currentPath.includes('pages/');
-    const isInAdmin = currentPath.includes('/admin/') || currentPath.includes('admin/');
-    
-    if (isInPages) {
-      return href; // Already in pages directory
-    } else if (isInAdmin) {
-      return `../pages/${href}`; // Go up from admin to pages
-    } else {
-      return `pages/${href}`; // From root, go to pages
     }
   };
   
