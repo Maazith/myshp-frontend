@@ -8,7 +8,35 @@
     <script>
         // Set API Base URL from environment variable (Vercel) or use production default
         // This allows Vercel to override the API URL via environment variables
-        window.API_BASE_URL = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+        
+        // Production backend URL
+        const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
+        const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
+        
+        // Determine which URL to use
+        if (!window.API_BASE_URL) {
+            // Check for Vercel environment variable
+            if (window.VERCEL_ENV_API_BASE_URL) {
+                window.API_BASE_URL = window.VERCEL_ENV_API_BASE_URL;
+            } 
+            // Check if running locally
+            else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
+                window.API_BASE_URL = LOCAL_API_URL;
+            }
+            // Production fallback
+            else {
+                window.API_BASE_URL = PRODUCTION_API_URL;
+            }
+        }
+        
+        // Set backend base URL (without /api) for media/static files
+        window.BACKEND_BASE_URL = window.API_BASE_URL.replace('/api', '');
+        
+        // Log for debugging (development only)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('🔗 Backend API URL:', window.API_BASE_URL);
+            console.log('🔗 Backend Base URL:', window.BACKEND_BASE_URL);
+        }
     </script>
     <style>
       .landing-header {

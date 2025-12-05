@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Status | EdithCloths</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <style>
+        body {
+            padding: 2rem;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .status-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--light-grey);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin: 1rem 0;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .status-error {
+            background: #E53935;
+            color: white;
+        }
+        .status-pending {
+            background: #ff9800;
+            color: white;
+        }
+        .test-btn {
+            background: var(--black);
+            color: var(--white);
+            border: 1px solid var(--light-grey);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        .test-btn:hover {
+            background: var(--text-dark);
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        h1 {
+            color: var(--white);
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: var(--white);
+            margin: 1.5rem 0 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-container">
+        <h1>🔗 Backend Connection Status</h1>
+        
+        <div class="status-card">
+            <h2>Configuration</h2>
+            <div class="status-item">
+                <span>API Base URL:</span>
+                <span id="api-url" style="font-family: monospace;">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span>Backend Base URL:</span>
+                <span id="backend-url" style="font-family: monospace;">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span>Environment:</span>
+                <span id="environment">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h2>Connection Tests</h2>
+            <button class="test-btn" onclick="testAll()">🧪 Test All Connections</button>
+            <button class="test-btn" onclick="testApiRoot()">Test API Root</button>
+            <button class="test-btn" onclick="testProducts()">Test Products</button>
+            <button class="test-btn" onclick="testCategories()">Test Categories</button>
+            <button class="test-btn" onclick="testBanners()">Test Banners</button>
+            
+            <div id="test-results" style="margin-top: 1rem;"></div>
+        </div>
+        
+        <div class="status-card">
+            <h2>System Information</h2>
+            <div id="system-info"></div>
+        </div>
+        
+        <div class="status-card">
+            <h2>Frontend Modules</h2>
+            <div id="modules-status"></div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import API module to get configuration
+        import { api } from './assets/js/api.js';
+        
+        // Display configuration
+        function displayConfig() {
+            document.getElementById('api-url').textContent = api.baseUrl || 'Not set';
+            document.getElementById('backend-url').textContent = window.BACKEND_BASE_URL || api.baseUrl?.replace('/api', '') || 'Not set';
+            
+            const hostname = window.location.hostname;
+            const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
+            document.getElementById('environment').textContent = isLocal ? 'Local Development' : 'Production';
+        }
+        
+        // Display system info
+        function displaySystemInfo() {
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Language': navigator.language,
+                'Hostname': window.location.hostname,
+                'Protocol': window.location.protocol,
+                'API Module Loaded': typeof api !== 'undefined' ? 'Yes ✅' : 'No ❌',
+                'Authentication': api?.isAuthenticated ? 'Logged In ✅' : 'Not Logged In'
+            };
+            
+            const infoHtml = Object.entries(info).map(([key, value]) => `
+                <div class="status-item">
+                    <span><strong>${key}:</strong></span>
+                    <span>${value}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('system-info').innerHTML = infoHtml;
+        }
+        
+        // Display modules status
+        function displayModulesStatus() {
+            const modules = [
+                { name: 'API Module', path: './assets/js/api.js', check: () => typeof api !== 'undefined' },
+                { name: 'Auth Module', path: './assets/js/auth.js', check: () => true },
+                { name: 'Cart Module', path: './assets/js/cart.js', check: () => true },
+                { name: 'Products Module', path: './assets/js/products.js', check: () => true },
+            ];
+            
+            const modulesHtml = modules.map(module => {
+                const loaded = module.check();
+                return `
+                    <div class="status-item">
+                        <span>${module.name}</span>
+                        <span class="status-badge ${loaded ? 'status-success' : 'status-error'}">
+                            ${loaded ? 'Loaded ✅' : 'Not Loaded ❌'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('modules-status').innerHTML = modulesHtml;
+        }
+        
+        // Test functions
+        window.testApiRoot = async () => {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing API Root...</p>';
+            
+            try {
+                const response = await fetch(`${api.baseUrl}/`);
+                const data = await response.json();
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>API Root</span>
+                        <span class="status-badge status-success">Connected ✅</span>
+                    </div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>API Root</span>
+                        <span class="status-badge status-error">Failed ❌</span>
+                    </div>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        };
+        
+        window.testProducts = async () => {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing Products endpoint...</p>';
+            
+            try {
+                const data = await api.getProducts();
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>Products</span>
+                        <span class="status-badge status-success">Connected ✅ (${data.length} products)</span>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>Products</span>
+                        <span class="status-badge status-error">Failed ❌</span>
+                    </div>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        };
+        
+        window.testCategories = async () => {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing Categories endpoint...</p>';
+            
+            try {
+                const data = await api.getCategories();
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>Categories</span>
+                        <span class="status-badge status-success">Connected ✅ (${data.length} categories)</span>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>Categories</span>
+                        <span class="status-badge status-error">Failed ❌</span>
+                    </div>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        };
+        
+        window.testBanners = async () => {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing Banners endpoint...</p>';
+            
+            try {
+                const data = await api.getBanners();
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>Banners</span>
+                        <span class="status-badge status-success">Connected ✅ (${data.length} banners)</span>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>Banners</span>
+                        <span class="status-badge status-error">Failed ❌</span>
+                    </div>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        };
+        
+        window.testAll = async () => {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Running all tests...</p>';
+            
+            const tests = [
+                { name: 'API Root', fn: window.testApiRoot },
+                { name: 'Products', fn: window.testProducts },
+                { name: 'Categories', fn: window.testCategories },
+                { name: 'Banners', fn: window.testBanners },
+            ];
+            
+            let results = [];
+            for (const test of tests) {
+                try {
+                    await test.fn();
+                    results.push({ name: test.name, status: 'success' });
+                } catch (error) {
+                    results.push({ name: test.name, status: 'error', message: error.message });
+                }
+            }
+            
+            const summary = results.map(r => `
+                <div class="status-item">
+                    <span>${r.name}</span>
+                    <span class="status-badge ${r.status === 'success' ? 'status-success' : 'status-error'}">
+                        ${r.status === 'success' ? '✅' : '❌'}
+                    </span>
+                </div>
+            `).join('');
+            
+            resultsDiv.innerHTML = `<h3>Test Summary</h3>${summary}`;
+        };
+        
+        // Initialize on load
+        displayConfig();
+        displaySystemInfo();
+        displayModulesStatus();
+    </script>
+</body>
+</html>
+
