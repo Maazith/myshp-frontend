@@ -20,18 +20,27 @@ async function loadOrderDetail() {
       `<option value="${stage.key}" ${order.status === stage.key ? 'selected' : ''}>${stage.label}</option>`
     ).join('');
     
-    const itemsHtml = order.items?.map(item => `
-      <div style="padding: 1rem; border-bottom: 1px solid rgba(230,230,230,0.1); display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <p style="font-weight: 600;">${item.product_title}</p>
-          <p style="color: var(--text-light); font-size: 0.9rem;">Size: ${item.size || 'N/A'} | Color: ${item.color || 'N/A'}</p>
+    const itemsHtml = order.items?.map(item => {
+      const imageUrl = item.product_image_url || '';
+      const imageHtml = imageUrl 
+        ? `<img src="${imageUrl}" alt="${item.product_title}" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1); margin-right: 1rem;" onerror="this.style.display='none'">`
+        : '<div style="width: 80px; height: 80px; background: rgba(255,255,255,0.05); border-radius: var(--radius); margin-right: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 0.8rem;">No Image</div>';
+      
+      return `
+        <div style="padding: 1rem; border-bottom: 1px solid rgba(230,230,230,0.1); display: flex; align-items: center;">
+          ${imageHtml}
+          <div style="flex: 1;">
+            <p style="font-weight: 600; margin-bottom: 0.25rem;">${item.product_title}</p>
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.25rem;">Size: ${item.size || 'N/A'} | Color: ${item.color || 'N/A'}</p>
+            <p style="color: var(--text-light); font-size: 0.9rem;">Qty: ${item.quantity}</p>
+          </div>
+          <div style="text-align: right;">
+            <p style="font-weight: 600;">${formatCurrency(item.price)}</p>
+            <p style="color: var(--text-light); font-size: 0.9rem;">Total: ${formatCurrency(item.price * item.quantity)}</p>
+          </div>
         </div>
-        <div style="text-align: right;">
-          <p style="font-weight: 600;">${formatCurrency(item.price)}</p>
-          <p style="color: var(--text-light); font-size: 0.9rem;">Qty: ${item.quantity}</p>
-        </div>
-      </div>
-    `).join('') || '<p>No items</p>';
+      `;
+    }).join('') || '<p>No items</p>';
     
     const html = `
       <div class="glass-card" style="margin-bottom: 1.5rem;">

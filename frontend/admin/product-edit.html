@@ -43,6 +43,15 @@
             <div class="form-group">
               <label for="hero-media">Hero Image (leave empty to keep current)</label>
               <input type="file" id="hero-media" accept="image/*">
+              <div id="current-hero-preview" style="margin-top: 1rem; display: none;">
+                <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Current Image:</p>
+                <img id="current-hero-img" src="" alt="Current Hero" style="max-width: 300px; max-height: 300px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1);">
+              </div>
+              <div id="new-hero-image-preview" style="margin-top: 1rem; display: none;">
+                <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">New Image Preview:</p>
+                <img id="new-hero-preview-img" src="" alt="Preview" style="max-width: 300px; max-height: 300px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn ghost small" id="remove-new-hero-preview" style="margin-top: 0.5rem;">Remove New Image</button>
+              </div>
             </div>
             <div class="form-group">
               <label>

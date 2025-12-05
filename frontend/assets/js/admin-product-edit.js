@@ -35,6 +35,14 @@ async function loadProduct() {
     document.getElementById('base-price').value = product.base_price || 0;
     document.getElementById('is-active').checked = product.is_active !== false;
     
+    // Show current hero image if available
+    if (product.hero_media_url) {
+      const currentPreview = document.getElementById('current-hero-preview');
+      const currentImg = document.getElementById('current-hero-img');
+      currentImg.src = product.hero_media_url;
+      currentPreview.style.display = 'block';
+    }
+    
     if (product.variants && product.variants.length > 0) {
       product.variants.forEach(variant => {
         addVariant(variant);
@@ -77,6 +85,32 @@ window.removeVariant = (id) => {
 };
 
 document.getElementById('add-variant').addEventListener('click', () => addVariant());
+
+// Hero image preview for new upload
+const heroMediaInput = document.getElementById('hero-media');
+const newHeroPreviewDiv = document.getElementById('new-hero-image-preview');
+const newHeroPreviewImg = document.getElementById('new-hero-preview-img');
+const removeNewHeroPreviewBtn = document.getElementById('remove-new-hero-preview');
+
+heroMediaInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      newHeroPreviewImg.src = event.target.result;
+      newHeroPreviewDiv.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    newHeroPreviewDiv.style.display = 'none';
+  }
+});
+
+removeNewHeroPreviewBtn.addEventListener('click', () => {
+  heroMediaInput.value = '';
+  newHeroPreviewDiv.style.display = 'none';
+  newHeroPreviewImg.src = '';
+});
 
 document.getElementById('product-form').addEventListener('submit', async (e) => {
   e.preventDefault();

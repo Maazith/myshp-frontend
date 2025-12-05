@@ -48,6 +48,32 @@ window.removeVariant = (id) => {
 
 document.getElementById('add-variant').addEventListener('click', addVariant);
 
+// Hero image preview
+const heroMediaInput = document.getElementById('hero-media');
+const heroPreviewDiv = document.getElementById('hero-image-preview');
+const heroPreviewImg = document.getElementById('hero-preview-img');
+const removeHeroPreviewBtn = document.getElementById('remove-hero-preview');
+
+heroMediaInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      heroPreviewImg.src = event.target.result;
+      heroPreviewDiv.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    heroPreviewDiv.style.display = 'none';
+  }
+});
+
+removeHeroPreviewBtn.addEventListener('click', () => {
+  heroMediaInput.value = '';
+  heroPreviewDiv.style.display = 'none';
+  heroPreviewImg.src = '';
+});
+
 document.getElementById('product-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById('form-error');

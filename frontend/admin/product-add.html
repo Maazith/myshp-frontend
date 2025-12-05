@@ -43,6 +43,10 @@
             <div class="form-group">
               <label for="hero-media">Hero Image</label>
               <input type="file" id="hero-media" accept="image/*">
+              <div id="hero-image-preview" style="margin-top: 1rem; display: none;">
+                <img id="hero-preview-img" src="" alt="Preview" style="max-width: 300px; max-height: 300px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn ghost small" id="remove-hero-preview" style="margin-top: 0.5rem;">Remove Image</button>
+              </div>
             </div>
             <div class="form-group">
               <label>
