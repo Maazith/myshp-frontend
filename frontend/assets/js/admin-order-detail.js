@@ -1,6 +1,6 @@
 import { adminAuth } from './admin-auth.js';
 import { adminApi } from './admin-api.js';
-import { formatCurrency, orderStages } from './components.js';
+import { formatCurrency, orderStages, getAbsoluteImageUrl } from './components.js';
 
 if (!adminAuth.requireAuth()) return;
 
@@ -21,7 +21,7 @@ async function loadOrderDetail() {
     ).join('');
     
     const itemsHtml = order.items?.map(item => {
-      const imageUrl = item.product_image_url || '';
+      const imageUrl = item.product_image_url ? getAbsoluteImageUrl(item.product_image_url) : '';
       const imageHtml = imageUrl 
         ? `<img src="${imageUrl}" alt="${item.product_title}" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1); margin-right: 1rem;" onerror="this.style.display='none'">`
         : '<div style="width: 80px; height: 80px; background: rgba(255,255,255,0.05); border-radius: var(--radius); margin-right: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 0.8rem;">No Image</div>';

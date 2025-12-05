@@ -194,7 +194,7 @@ export const mountFooter = async () => {
 };
 
 // Helper function to convert relative image URLs to absolute backend URLs
-const getAbsoluteImageUrl = (imageUrl) => {
+export const getAbsoluteImageUrl = (imageUrl) => {
   if (!imageUrl) return null;
   
   // If already absolute URL (http/https), return as is
