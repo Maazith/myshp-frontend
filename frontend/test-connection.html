@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 {
+            color: #fff;
+            border-bottom: 2px solid #E6E6E6;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #E6E6E6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.error {
+            background: #E53935;
+            color: white;
+        }
+        .status.pending {
+            background: #ff9800;
+            color: white;
+        }
+        button {
+            background: #000;
+            color: #fff;
+            border: 1px solid #E6E6E6;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #333;
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #E6E6E6;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 500px;
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 Backend Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>Configure Backend URL</h2>
+        <label>Backend API Base URL:</label>
+        <input type="text" id="backend-url" value="https://myshp-backend.onrender.com/api" placeholder="https://your-backend-url.onrender.com/api">
+        <button onclick="updateUrl()">Update URL</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Connection Tests</h2>
+        <button onclick="testConnection()">🧪 Test All Connections</button>
+        <button onclick="testApiRoot()">1. Test API Root</button>
+        <button onclick="testProducts()">2. Test Products Endpoint</button>
+        <button onclick="testCategories()">3. Test Categories Endpoint</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let API_BASE = document.getElementById('backend-url').value;
+
+        function updateUrl() {
+            API_BASE = document.getElementById('backend-url').value;
+            showResult('info', `✅ Backend URL updated to: ${API_BASE}`);
+        }
+
+        async function testConnection() {
+            clearResults();
+            showResult('info', '🔄 Testing all endpoints...');
+            await testApiRoot();
+            await new Promise(r => setTimeout(r, 500));
+            await testProducts();
+            await new Promise(r => setTimeout(r, 500));
+            await testCategories();
+            showResult('info', '✅ All tests completed!');
+        }
+
+        async function testApiRoot() {
+            clearResults();
+            showResult('info', `Testing API Root: ${API_BASE}/`);
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('success', `✅ API Root Connected!`, {
+                        status: response.status,
+                        statusText: response.statusText,
+                        responseTime: `${responseTime}ms`,
+                        data: data
+                    });
+                } else {
+                    showResult('error', `❌ API Root Failed!`, {
+                        status: response.status,
+                        statusText: response.statusText,
+                        message: 'Server responded but with an error status'
+                    });
+                }
+            } catch (error) {
+                showResult('error', `❌ API Root Connection Failed!`, {
+                    error: error.message,
+                    type: error.name,
+                    suggestion: getErrorSuggestion(error)
+                });
+            }
+        }
+
+        async function testProducts() {
+            showResult('info', `Testing Products: ${API_BASE}/products/`);
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/products/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('success', `✅ Products Endpoint Connected!`, {
+                        status: response.status,
+                        responseTime: `${responseTime}ms`,
+                        productCount: Array.isArray(data) ? data.length : 'N/A'
+                    });
+                } else {
+                    showResult('error', `❌ Products Endpoint Failed!`, {
+                        status: response.status,
+                        statusText: response.statusText
+                    });
+                }
+            } catch (error) {
+                showResult('error', `❌ Products Connection Failed!`, {
+                    error: error.message,
+                    type: error.name
+                });
+            }
+        }
+
+        async function testCategories() {
+            showResult('info', `Testing Categories: ${API_BASE}/categories/`);
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/categories/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('success', `✅ Categories Endpoint Connected!`, {
+                        status: response.status,
+                        responseTime: `${responseTime}ms`,
+                        categoryCount: Array.isArray(data) ? data.length : 'N/A'
+                    });
+                } else {
+                    showResult('error', `❌ Categories Endpoint Failed!`, {
+                        status: response.status,
+                        statusText: response.statusText
+                    });
+                }
+            } catch (error) {
+                showResult('error', `❌ Categories Connection Failed!`, {
+                    error: error.message,
+                    type: error.name
+                });
+            }
+        }
+
+        function getErrorSuggestion(error) {
+            if (error.message.includes('fetch')) {
+                return 'Possible causes: 1) Backend is not deployed, 2) Service is sleeping (free tier), 3) Wrong URL, 4) Network/CORS issue';
+            }
+            if (error.message.includes('CORS')) {
+                return 'CORS error: Check backend CORS settings in settings.py';
+            }
+            return 'Check backend logs on Render dashboard for more details';
+        }
+
+        function showResult(type, message, details = null) {
+            const resultsDiv = document.getElementById('results');
+            const testItem = document.createElement('div');
+            testItem.className = 'test-item';
+            
+            const statusClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'pending';
+            const statusText = type === 'success' ? 'SUCCESS' : type === 'error' ? 'ERROR' : 'INFO';
+            
+            testItem.innerHTML = `
+                <strong>${message}</strong>
+                <span class="status ${statusClass}">${statusText}</span>
+                ${details ? `<pre>${JSON.stringify(details, null, 2)}</pre>` : ''}
+            `;
+            
+            resultsDiv.appendChild(testItem);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            showResult('info', 'Ready to test! Click "Test All Connections" to begin.');
+        });
+    </script>
+</body>
+</html>
+

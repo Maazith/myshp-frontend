@@ -208,3 +208,4 @@ https://myshp-backend.onrender.com/api/categories/     # Categories List
    - Django Admin: `http://127.0.0.1:8000/admin/`
    - Custom Admin: `http://127.0.0.1:5500/admin/login.html`
 
+

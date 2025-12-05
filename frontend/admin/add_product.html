@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add Product | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
+    <style>
+      /* Ensure button is always visible and accessible */
+      #product-form {
+        padding-bottom: 2rem;
+      }
+      #product-form button[type="submit"] {
+        position: relative;
+        z-index: 10;
+        background: var(--black);
+        color: var(--white);
+        border: 1px solid var(--black);
+      }
+      #product-form button[type="submit"]:hover {
+        background: var(--text-dark);
+        border-color: var(--text-dark);
+      }
+      #product-message {
+        word-wrap: break-word;
+        word-break: break-word;
+      }
+      /* Ensure form is scrollable on mobile */
+      .admin-content {
+        overflow-y: auto;
+        max-height: 100vh;
+      }
+    </style>
   </head>
   <body data-admin="add-product">
     <div class="admin-grid">
@@ -42,12 +68,16 @@
               <label for="description">Description</label>
               <textarea id="description" name="description" rows="5"></textarea>
             </div>
-            <label style="display:flex;align-items:center;gap:.5rem">
-              <input type="checkbox" name="is_featured" />
-              Featured
-            </label>
-            <button class="btn" type="submit">Save Product</button>
-            <p id="product-message" style="margin-top:1rem"></p>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:.5rem">
+                <input type="checkbox" name="is_featured" />
+                Featured
+              </label>
+            </div>
+            <div style="margin-top:2rem;padding-top:2rem;border-top:1px solid var(--light-grey);">
+              <button class="btn" type="submit" style="width:100%;padding:1rem;font-size:1rem;margin-bottom:1rem;">Save Product</button>
+              <p id="product-message" style="margin-top:1rem;min-height:1.5rem;"></p>
+            </div>
           </form>
         </section>
       </main>
