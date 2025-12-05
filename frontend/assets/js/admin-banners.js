@@ -45,6 +45,25 @@ window.deleteBanner = async (id) => {
   }
 };
 
+// Delete all banners
+document.getElementById('delete-all-banners')?.addEventListener('click', async () => {
+  if (!confirm('⚠️ WARNING: This will delete ALL banners permanently. This action cannot be undone!\n\nAre you absolutely sure?')) {
+    return;
+  }
+  
+  if (!confirm('This is your last chance. Delete ALL banners?')) {
+    return;
+  }
+  
+  try {
+    const result = await adminApi.bulkDelete('banners');
+    alert(`Successfully deleted ${result.deleted_count} banner(s)`);
+    loadBanners();
+  } catch (error) {
+    alert('Error deleting banners: ' + error.message);
+  }
+});
+
 document.getElementById('banner-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById('banner-error');
