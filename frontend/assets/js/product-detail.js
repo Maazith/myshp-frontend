@@ -192,10 +192,7 @@ colorSelect?.addEventListener('change', (event) => {
 });
 
 document.getElementById('add-to-cart')?.addEventListener('click', async () => {
-  if (!api.accessToken) {
-    window.location.href = 'login.html';
-    return;
-  }
+  // No auth required - add to cart works without login
   const variant = currentVariant();
   if (!variant) {
     holder.error.textContent = 'Choose a valid variant.';

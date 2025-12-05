@@ -1,10 +1,7 @@
 import { api } from './api.js';
 import { formatCurrency, renderOrderTracker } from './components.js';
 
-const requiresAuth = document.body.dataset.requiresAuth;
-if (requiresAuth && !api.accessToken) {
-  window.location.href = 'login.html';
-}
+// Orders page - shows message if no auth (backend requires auth for orders)
 
 const listEl = document.getElementById('orders-list');
 const infoEl = document.getElementById('order-info');
@@ -84,7 +81,6 @@ const renderOrderSuccess = (orders) => {
 };
 
 const loadOrders = async (forceRender = false) => {
-  if (!api.accessToken) return;
   try {
     const orders = await api.request('/orders/my-orders');
     renderOrders(orders, forceRender);
@@ -92,7 +88,11 @@ const loadOrders = async (forceRender = false) => {
   } catch (err) {
     console.error('Error loading orders:', err);
     if (listEl) {
-      listEl.innerHTML = `<p style="color:var(--danger);">Error loading orders: ${err.message}</p>`;
+      if (err.message && err.message.includes('401')) {
+        listEl.innerHTML = '<p style="color:var(--text-light);">Orders are not available. Please contact support for order inquiries.</p>';
+      } else {
+        listEl.innerHTML = `<p style="color:var(--danger);">Error loading orders: ${err.message}</p>`;
+      }
     }
   }
 };

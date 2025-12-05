@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { href: 'index.html', label: 'Home', basePath: '' },
   { href: 'men.html', label: 'Men', basePath: 'pages/' },
   { href: 'women.html', label: 'Women', basePath: 'pages/' },
-  { href: 'myorders.html', label: 'My Orders', auth: true, basePath: 'pages/' },
   { href: 'contact.html', label: 'Contact', basePath: 'pages/' },
 ];
 
@@ -54,7 +53,6 @@ export const mountNavbar = async () => {
   // Determine correct logo path based on current page location
   const currentPath = window.location.pathname;
   const currentPage = window.location.pathname.split('/').pop() || '';
-  const isAuthPage = currentPage === 'login.html' || currentPage === 'register.html';
   const isInPages = currentPath.includes('/pages/') || currentPath.includes('pages/');
   const isInAdmin = currentPath.includes('/admin/') || currentPath.includes('admin/');
   
@@ -80,10 +78,10 @@ export const mountNavbar = async () => {
     // Use default logo path - continue with determined path
   }
   
-  // Hide nav links on login/register pages or when not authenticated
-  const showNavLinks = !isAuthPage && api.accessToken;
-  // Hide auth actions (logout/cart) on auth pages
-  const showAuthActions = !isAuthPage;
+  // Always show nav links (no auth required)
+  const showNavLinks = true;
+  // Always show auth actions (cart, no logout/login buttons)
+  const showAuthActions = true;
   
   // Determine correct href paths based on current location
   const getLinkHref = (link) => {
@@ -138,18 +136,11 @@ export const mountNavbar = async () => {
       </div>
       ${showNavLinks ? `<div class="nav-links" id="nav-links">
         ${NAV_LINKS.map((link) => {
-          if (link.auth && !api.accessToken) return '';
           return `<a class="${isActive(link.href)}" href="${getLinkHref(link)}">${link.label}</a>`;
         }).join('')}
       </div>` : ''}
       ${showAuthActions ? `<div class="nav-actions">
-        ${api.accessToken ? `
-          <button class="btn ghost" id="nav-logout">Logout</button>
-          <a class="icon-link" href="${getAuthLinkHref('cart.html')}" title="Cart">&#128717;</a>
-        ` : `
-          <a class="btn" href="${getAuthLinkHref('login.html')}">Login</a>
-          <a class="btn ghost" href="${getAuthLinkHref('register.html')}">Register</a>
-        `}
+        <a class="icon-link" href="${getAuthLinkHref('cart.html')}" title="Cart">&#128717;</a>
       </div>` : ''}
     </nav>
   `;
@@ -179,12 +170,7 @@ export const mountNavbar = async () => {
       });
     });
   }
-  const logoutBtn = document.getElementById('nav-logout');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      api.logout();
-    });
-  }
+  // Logout button removed - no user login system
 };
 
 export const mountFooter = async () => {

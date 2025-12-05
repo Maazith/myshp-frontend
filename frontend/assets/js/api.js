@@ -54,7 +54,7 @@ export const api = {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(USER_KEY);
-    window.location.href = getLoginPath();
+    // No redirect - user login system removed
   },
   async request(path, { method = 'GET', body, isForm = false } = {}) {
     const options = { method };
@@ -79,8 +79,12 @@ export const api = {
       if (response.status === 204) return null;
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
+        // Handle 401 errors without redirecting (no login system)
         if (response.status === 401) {
-          this.logout();
+          // Clear tokens but don't redirect
+          localStorage.removeItem(ACCESS_KEY);
+          localStorage.removeItem(REFRESH_KEY);
+          localStorage.removeItem(USER_KEY);
         }
         // Handle validation errors (400)
         if (response.status === 400 && data.detail) {
@@ -122,24 +126,7 @@ export const api = {
       throw error;
     }
   },
-  async login({ username, password }) {
-    const payload = await this.request('/auth/login', {
-      method: 'POST',
-      body: { username, password },
-    });
-    localStorage.setItem(ACCESS_KEY, payload.access);
-    localStorage.setItem(REFRESH_KEY, payload.refresh);
-    if (payload.user) {
-      localStorage.setItem(USER_KEY, JSON.stringify(payload.user));
-    }
-    return payload;
-  },
-  async register(data) {
-    return await this.request('/auth/register', {
-      method: 'POST',
-      body: data,
-    });
-  },
+  // Login and register methods removed - no user login system
   // Products
   async getProducts(gender = null) {
     const path = gender ? `/products/?gender=${gender}` : '/products/';
@@ -201,26 +188,4 @@ export const api = {
   },
 };
 
-// Helper function to get correct login path
-function getLoginPath() {
-  const currentPath = window.location.pathname;
-  // If already in pages directory, use relative path
-  if (currentPath.includes('/pages/') || currentPath.includes('pages/')) {
-    return 'login.html';
-  }
-  // If in admin directory, go up then into pages
-  if (currentPath.includes('/admin/') || currentPath.includes('admin/')) {
-    return '../pages/login.html';
-  }
-  // If at root, go to pages
-  return 'pages/login.html';
-}
-
-// Auth guard function
-export function requireAuth() {
-  if (!api.isAuthenticated) {
-    window.location.href = getLoginPath();
-    return false;
-  }
-  return true;
-}
+// Auth guard function removed - no user login system

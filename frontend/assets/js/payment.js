@@ -1,9 +1,7 @@
 import { api } from './api.js';
 import { formatCurrency } from './components.js';
 
-if (!api.accessToken) {
-  window.location.href = 'login.html';
-}
+// No auth required - payment works without login
 
 const params = new URLSearchParams(window.location.search);
 const orderId = params.get('orderId');

@@ -5,9 +5,7 @@ const summaryEl = document.getElementById('checkout-summary');
 const form = document.getElementById('checkout-form');
 const errorEl = document.getElementById('checkout-error');
 
-if (!api.accessToken) {
-  window.location.href = 'login.html';
-}
+// No auth required - checkout works without login
 
 const renderSummary = (cart) => {
   if (!cart?.items?.length) {

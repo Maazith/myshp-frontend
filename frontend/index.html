@@ -151,32 +151,18 @@
     </style>
 </head>
 <body>
-    <!-- Admin Button at Top -->
-    <header class="landing-header">
-      <a href="admin/login.html" class="btn ghost" style="text-decoration:none;display:inline-block;pointer-events:auto;font-weight:600;padding:0.65rem 1.5rem;">Admin</a>
-    </header>
-    
-    <!-- Redirect to User Login Page -->
+    <!-- Redirect to Storefront -->
+    <script>
+        // Redirect to storefront homepage
+        window.location.href = 'pages/index.html';
+    </script>
     <main class="landing-main">
       <section class="landing-section">
         <div style="margin-bottom:3rem;">
           <h1 class="landing-title">EDITHCLOTHS</h1>
-          <p class="landing-subtitle">EVEN DEAD I AM THE HERO</p>
-          <p class="landing-desc">Welcome to luxury fashion</p>
-        </div>
-        
-        <div style="margin-top:3rem;">
-          <a href="pages/login.html" class="btn landing-btn">Login to Shop</a>
-          <p style="margin-top:1.5rem;color:#FFFFFF;opacity:0.7;">
-            Don't have an account? <a href="pages/register.html" style="color:#FFFFFF;text-decoration:underline;">Register here</a>
-          </p>
+          <p class="landing-subtitle">Redirecting to storefront...</p>
         </div>
       </section>
     </main>
-    
-    <script type="module">
-        // Landing page - always show, no automatic redirects
-        // Users can choose to go to Admin login or User login
-    </script>
 </body>
 </html>

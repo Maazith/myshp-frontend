@@ -5,9 +5,7 @@ const itemsContainer = document.getElementById('cart-items');
 const totalEl = document.getElementById('cart-total');
 const checkoutBtn = document.getElementById('go-checkout');
 
-if (!api.accessToken) {
-  window.location.href = 'login.html';
-}
+// No auth required - cart works without login
 
 const renderItems = (cart) => {
   if (!cart.items?.length) {
@@ -50,12 +48,26 @@ const renderItems = (cart) => {
       // First try variant-specific images (for the selected color)
       if (item.variant?.images && Array.isArray(item.variant.images) && item.variant.images.length > 0) {
         const firstImage = item.variant.images.find(img => img.is_primary) || item.variant.images[0];
-        imageUrl = firstImage?.image_url || null;
+        imageUrl = firstImage?.image_url || firstImage?.image || null;
       }
       
-      // Fallback to product hero image
+      // Try variant product_media
       if (!imageUrl && item.variant?.product_media) {
         imageUrl = item.variant.product_media;
+      }
+      
+      // Try variant product_media_url
+      if (!imageUrl && item.variant?.product_media_url) {
+        imageUrl = item.variant.product_media_url;
+      }
+      
+      // Try product-level images
+      if (!imageUrl && item.product?.hero_media_url) {
+        imageUrl = item.product.hero_media_url;
+      }
+      
+      if (!imageUrl && item.product?.hero_media) {
+        imageUrl = item.product.hero_media;
       }
       
       // Convert to absolute URL if needed
@@ -63,18 +75,26 @@ const renderItems = (cart) => {
       
       // Fallback to placeholder
       if (!imageUrl) {
-        imageUrl = '../assets/img/placeholder.jpg';
+        // Determine correct placeholder path based on current location
+        const currentPath = window.location.pathname;
+        const isInPages = currentPath.includes('/pages/') || currentPath.includes('pages/');
+        imageUrl = isInPages ? '../assets/img/placeholder.jpg' : 'assets/img/placeholder.jpg';
       }
+      
+      // Determine placeholder path for error fallback
+      const currentPath = window.location.pathname;
+      const isInPages = currentPath.includes('/pages/') || currentPath.includes('pages/');
+      const placeholderPath = isInPages ? '../assets/img/placeholder.jpg' : 'assets/img/placeholder.jpg';
       
       return `
         <div class="cart-item" data-id="${item.id}">
-          <img src="${imageUrl}" alt="${item.variant?.product_title || 'Product'}" onerror="this.src='../assets/img/placeholder.jpg'" />
-          <div>
-            <h3>${item.variant?.product_title || ''}</h3>
+          <img src="${imageUrl}" alt="${item.variant?.product_title || 'Product'}" onerror="this.onerror=null; this.src='${placeholderPath}';" loading="lazy" />
+          <div class="cart-item-info">
+            <h3>${item.variant?.product_title || 'Product'}</h3>
             <p>${item.variant?.size || ''} / ${item.variant?.color || ''}</p>
-            <strong>${formatCurrency(item.variant?.price)}</strong>
+            <strong>${formatCurrency(item.variant?.price || 0)}</strong>
           </div>
-          <div>
+          <div class="cart-item-quantity">
             <input type="number" min="1" value="${item.quantity}" data-action="update" data-id="${item.id}" />
           </div>
           <button class="btn ghost small" data-action="remove" data-id="${item.id}">Remove</button>
