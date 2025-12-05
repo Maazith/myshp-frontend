@@ -33,7 +33,6 @@ async function loadProduct() {
     document.getElementById('category').value = product.category?.id || '';
     document.getElementById('gender').value = product.gender || 'M';
     document.getElementById('base-price').value = product.base_price || 0;
-    document.getElementById('is-featured').checked = product.is_featured || false;
     document.getElementById('is-active').checked = product.is_active !== false;
     
     if (product.variants && product.variants.length > 0) {
@@ -50,7 +49,7 @@ async function loadProduct() {
 function addVariant(variant = {}) {
   variantCount++;
   const variantHtml = `
-    <div class="glass-card" style="padding: 1rem; margin-bottom: 1rem;" data-variant="${variantCount}">
+    <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;" data-variant="${variantCount}">
       <div class="form-group">
         <label>Size</label>
         <input type="text" class="variant-size" value="${variant.size || ''}" placeholder="e.g., S, M, L">
@@ -67,7 +66,7 @@ function addVariant(variant = {}) {
         <label>Price Override (optional)</label>
         <input type="number" class="variant-price" step="0.01" min="0" value="${variant.price_override || ''}" placeholder="Leave empty to use base price">
       </div>
-      <button type="button" class="btn ghost small" onclick="removeVariant(${variantCount})">Remove</button>
+      <button type="button" class="btn ghost small" onclick="removeVariant(${variantCount})" style="margin-top: 0.5rem;">Remove</button>
     </div>
   `;
   document.getElementById('variants-list').insertAdjacentHTML('beforeend', variantHtml);
@@ -98,7 +97,6 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     formData.append('category_id', document.getElementById('category').value);
     formData.append('gender', document.getElementById('gender').value);
     formData.append('base_price', document.getElementById('base-price').value);
-    formData.append('is_featured', document.getElementById('is-featured').checked);
     formData.append('is_active', document.getElementById('is-active').checked);
     
     const heroFile = document.getElementById('hero-media').files[0];

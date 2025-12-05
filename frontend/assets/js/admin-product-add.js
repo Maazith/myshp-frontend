@@ -67,7 +67,6 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     formData.append('category_id', document.getElementById('category').value);
     formData.append('gender', document.getElementById('gender').value);
     formData.append('base_price', document.getElementById('base-price').value);
-    formData.append('is_featured', document.getElementById('is-featured').checked);
     formData.append('is_active', document.getElementById('is-active').checked);
     
     const heroFile = document.getElementById('hero-media').files[0];
