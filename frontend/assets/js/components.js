@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: 'men.html', label: 'Men', basePath: 'pages/' },
   { href: 'women.html', label: 'Women', basePath: 'pages/' },
   { href: 'contact.html', label: 'Contact', basePath: 'pages/' },
+  { href: 'cart.html', label: 'Cart', basePath: 'pages/' },
 ];
 
 export const formatCurrency = (value) =>
@@ -138,9 +139,6 @@ export const mountNavbar = async () => {
         ${NAV_LINKS.map((link) => {
           return `<a class="${isActive(link.href)}" href="${getLinkHref(link)}">${link.label}</a>`;
         }).join('')}
-      </div>` : ''}
-      ${showAuthActions ? `<div class="nav-actions">
-        <a class="icon-link" href="${getAuthLinkHref('cart.html')}" title="Cart">&#128717;</a>
       </div>` : ''}
     </nav>
   `;
