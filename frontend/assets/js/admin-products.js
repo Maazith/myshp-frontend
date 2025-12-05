@@ -1,6 +1,6 @@
 import { adminAuth } from './admin-auth.js';
 import { adminApi } from './admin-api.js';
-import { formatCurrency } from './components.js';
+import { formatCurrency, getAbsoluteImageUrl } from './components.js';
 
 if (!adminAuth.requireAuth()) return;
 
@@ -16,15 +16,7 @@ async function loadProducts() {
     
     const productsHtml = products.map(product => {
       // Get image URL from hero_media field or use placeholder
-      let imageUrl = '../assets/img/placeholder.jpg';
-      if (product.hero_media) {
-        // If hero_media is a URL string, use it directly
-        if (typeof product.hero_media === 'string' && (product.hero_media.startsWith('http') || product.hero_media.startsWith('/'))) {
-          imageUrl = product.hero_media;
-        } else if (product.hero_media.url) {
-          imageUrl = product.hero_media.url;
-        }
-      }
+      const imageUrl = product.hero_media ? getAbsoluteImageUrl(product.hero_media) : '../assets/img/placeholder.jpg';
       return `
         <div style="padding: 1.5rem; border-bottom: 1px solid rgba(230,230,230,0.1); display: grid; grid-template-columns: 100px 1fr auto; gap: 1.5rem; align-items: center;">
           <img src="${imageUrl}" alt="${product.title}" style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius);">
