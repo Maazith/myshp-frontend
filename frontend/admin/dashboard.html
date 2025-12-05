@@ -6,33 +6,41 @@
     <title>Admin Dashboard | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
   </head>
-  <body data-admin="dashboard">
-    <div class="admin-grid">
-      <aside class="sidebar" data-admin-nav></aside>
-      <main class="admin-content">
-        <!-- Summary Stats Cards -->
-        <section class="stats-grid" id="dashboard-stats"></section>
-        
-        <!-- Analytics Sections -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:1.5rem;margin-top:1.5rem;">
-          <!-- Revenue Analytics -->
-          <section class="glass-card">
-            <h2 style="color:var(--white);font-size:1.5rem;margin-bottom:1rem;border-bottom:2px solid var(--light-grey);padding-bottom:0.5rem;">Revenue Analytics</h2>
-            <div id="revenue-analytics"></div>
-          </section>
-          
-          <!-- Most Ordered Products -->
-          <section class="glass-card">
-            <h2 style="color:var(--white);font-size:1.5rem;margin-bottom:1rem;border-bottom:2px solid var(--light-grey);padding-bottom:0.5rem;">Most Ordered Products</h2>
-            <div id="top-products"></div>
-          </section>
+  <body>
+    <header data-component="admin-navbar"></header>
+    <main>
+      <section class="section">
+        <div class="section-header">
+          <h1 class="section-title">Dashboard</h1>
         </div>
-        
-        <!-- Recent Orders -->
-        <section class="glass-card" style="margin-top:1.5rem;" id="dashboard-orders"></section>
-      </main>
-    </div>
-    <script type="module" src="../assets/js/admin.js"></script>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+          <div class="glass-card" style="padding: 1.5rem;">
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Total Orders</p>
+            <h2 style="font-size: 2rem; font-weight: 700;" id="total-orders">-</h2>
+          </div>
+          <div class="glass-card" style="padding: 1.5rem;">
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Pending Orders</p>
+            <h2 style="font-size: 2rem; font-weight: 700;" id="pending-orders">-</h2>
+          </div>
+          <div class="glass-card" style="padding: 1.5rem;">
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Completed Orders</p>
+            <h2 style="font-size: 2rem; font-weight: 700;" id="completed-orders">-</h2>
+          </div>
+          <div class="glass-card" style="padding: 1.5rem;">
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Total Revenue</p>
+            <h2 style="font-size: 2rem; font-weight: 700;" id="total-revenue">-</h2>
+          </div>
+        </div>
+        <div class="glass-card" style="padding: 1.5rem;">
+          <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">Recent Orders</h2>
+          <div id="recent-orders"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module">
+      import { mountAdminNavbar } from '../assets/js/admin-navbar.js';
+      mountAdminNavbar();
+    </script>
+    <script type="module" src="../assets/js/admin-dashboard.js"></script>
   </body>
 </html>
-

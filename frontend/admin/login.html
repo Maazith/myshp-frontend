@@ -6,7 +6,7 @@
     <title>Admin Login | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
   </head>
-  <body data-admin="login" style="background:#1a1a1a;color:#FFFFFF;">
+  <body>
     <main>
       <section class="login-section">
         <div class="form-card glass-card" style="text-align:center;">
@@ -27,30 +27,6 @@
         </div>
       </section>
     </main>
-    <script type="module" src="../assets/js/admin.js"></script>
-    <script>
-      // Auto-fill from URL parameters if present (for testing only)
-      window.addEventListener('DOMContentLoaded', () => {
-        const params = new URLSearchParams(window.location.search);
-        const username = params.get('username');
-        const password = params.get('password');
-        
-        if (username) {
-          const usernameInput = document.getElementById('admin-user');
-          if (usernameInput) usernameInput.value = username;
-        }
-        
-        if (password) {
-          const passwordInput = document.getElementById('admin-pass');
-          if (passwordInput) passwordInput.value = password;
-        }
-        
-        // Remove credentials from URL for security
-        if (username || password) {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      });
-    </script>
+    <script type="module" src="../assets/js/admin-auth.js"></script>
   </body>
 </html>
-

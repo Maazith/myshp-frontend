@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Products | Admin | EdithCloths</title>
+    <title>Order Detail | Admin | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
   </head>
   <body>
@@ -11,18 +11,17 @@
     <main>
       <section class="section">
         <div class="section-header">
-          <h1 class="section-title">Products</h1>
-          <a href="product-add.html" class="btn">Add Product</a>
+          <h1 class="section-title">Order Details</h1>
+          <a href="orders.html" class="btn ghost">Back to Orders</a>
         </div>
-        <div class="glass-card">
-          <div id="products-list"></div>
-        </div>
+        <div id="order-detail-content"></div>
       </section>
     </main>
     <script type="module">
       import { mountAdminNavbar } from '../assets/js/admin-navbar.js';
       mountAdminNavbar();
     </script>
-    <script type="module" src="../assets/js/admin-products.js"></script>
+    <script type="module" src="../assets/js/admin-order-detail.js"></script>
   </body>
 </html>
+

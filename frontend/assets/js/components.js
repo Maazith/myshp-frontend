@@ -180,9 +180,17 @@ export const mountFooter = async () => {
         <p>Customer Care</p>
         <a href="mailto:${supportEmail}">${supportEmail}</a>
       </div>
-      <p class="copyright">© ${new Date().getFullYear()} EdithCloths</p>
+      <p class="copyright" id="admin-trigger" style="cursor: pointer; user-select: none;">© ${new Date().getFullYear()} EdithCloths</p>
     </footer>
   `;
+  
+  // Hidden admin trigger - click on copyright text
+  const trigger = document.getElementById('admin-trigger');
+  if (trigger) {
+    trigger.addEventListener('click', () => {
+      window.location.href = '/admin/login.html';
+    });
+  }
 };
 
 // Helper function to convert relative image URLs to absolute backend URLs

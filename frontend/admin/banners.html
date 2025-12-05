@@ -3,41 +3,53 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Banners | EdithCloths Admin</title>
+    <title>Banners | Admin | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
   </head>
-  <body data-admin="banners">
-    <div class="admin-grid">
-      <aside class="sidebar" data-admin-nav></aside>
-      <main class="admin-content">
-        <section class="glass-card">
-          <h1>Homepage Banners</h1>
-          <form id="banner-form" enctype="multipart/form-data">
+  <body>
+    <header data-component="admin-navbar"></header>
+    <main>
+      <section class="section">
+        <div class="section-header">
+          <h1 class="section-title">Banners</h1>
+        </div>
+        <div class="form-card glass-card" style="margin-bottom: 2rem;">
+          <h2 style="margin-bottom: 1rem;">Upload New Banner</h2>
+          <form id="banner-form">
             <div class="form-group">
-              <label for="banner-title">Title</label>
-              <input id="banner-title" name="title" required />
+              <label for="banner-image">Banner Image</label>
+              <input type="file" id="banner-image" accept="image/*" required>
             </div>
             <div class="form-group">
-              <label for="banner-subtitle">Subtitle (Optional)</label>
-              <input id="banner-subtitle" name="subtitle" />
+              <label for="banner-title">Title (optional)</label>
+              <input type="text" id="banner-title">
             </div>
             <div class="form-group">
-              <label for="banner-media">Banner Image *</label>
-              <input id="banner-media" name="media" type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" required />
-              <small style="color:#E6E6E6;font-size:0.85rem;display:block;margin-top:0.5rem;">Select an image file from your device (PNG, JPG, JPEG, GIF, WEBP)</small>
-              <div id="file-preview" style="margin-top:1rem;display:none;">
-                <img id="preview-image" src="" alt="Preview" style="max-width:300px;max-height:200px;border-radius:var(--radius);border:1px solid var(--light-grey);" />
-                <p id="file-info" style="color:#E6E6E6;font-size:0.85rem;margin-top:0.5rem;"></p>
-              </div>
+              <label for="banner-subtitle">Subtitle (optional)</label>
+              <input type="text" id="banner-subtitle">
             </div>
-            <button class="btn" type="submit">Upload Banner</button>
-            <p id="banner-message" style="margin-top:1rem"></p>
+            <div class="form-group">
+              <label for="banner-link">Link URL (optional)</label>
+              <input type="url" id="banner-link">
+            </div>
+            <div class="form-group">
+              <label for="banner-order">Display Order</label>
+              <input type="number" id="banner-order" min="0" value="0">
+            </div>
+            <button type="submit" class="btn">Upload Banner</button>
+            <p id="banner-error" style="color: var(--danger); margin-top: 1rem;"></p>
           </form>
-        </section>
-        <section class="glass-card" id="banners-list"></section>
-      </main>
-    </div>
-    <script type="module" src="../assets/js/admin.js"></script>
+        </div>
+        <div class="glass-card">
+          <h2 style="margin-bottom: 1rem;">Existing Banners</h2>
+          <div id="banners-list"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module">
+      import { mountAdminNavbar } from '../assets/js/admin-navbar.js';
+      mountAdminNavbar();
+    </script>
+    <script type="module" src="../assets/js/admin-banners.js"></script>
   </body>
 </html>
-
