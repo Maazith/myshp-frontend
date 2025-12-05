@@ -7,13 +7,19 @@ export const adminApi = {
   async request(path, options = {}) {
     const token = localStorage.getItem(ADMIN_TOKEN_KEY);
     const headers = {
-      'Content-Type': 'application/json',
       ...options.headers,
     };
+    
+    // Don't set Content-Type for FormData - browser will set it with boundary
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
     if (token) headers['Authorization'] = `Bearer ${token}`;
     
     if (options.body instanceof FormData) {
-      delete headers['Content-Type'];
+      // FormData - don't stringify
+      options.body = options.body;
     } else if (options.body && typeof options.body === 'object') {
       options.body = JSON.stringify(options.body);
     }
@@ -43,9 +49,13 @@ export const adminApi = {
     return await this.request('/orders/');
   },
   async getOrder(id) {
-    // Get order from orders list or use detail endpoint if available
+    // Get order from orders list
     const orders = await this.getOrders();
-    return orders.find(o => o.id === parseInt(id)) || orders.find(o => o.order_number === id);
+    const order = orders.find(o => o.id === parseInt(id)) || orders.find(o => o.order_number === id);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    return order;
   },
   async updateOrderStatus(id, status) {
     return await this.request(`/orders/${id}/status`, {
@@ -61,29 +71,15 @@ export const adminApi = {
   async getProduct(id) {
     return await this.request(`/products/id/${id}/`);
   },
-  async createProduct(data) {
-    const formData = new FormData();
-    Object.keys(data).forEach(key => {
-      if (key === 'variants' || key === 'images') {
-        formData.append(key, JSON.stringify(data[key]));
-      } else if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key]);
-      }
-    });
+  async createProduct(formData) {
+    // FormData is already created in the calling function
     return await this.request('/products/add', {
       method: 'POST',
       body: formData,
     });
   },
-  async updateProduct(id, data) {
-    const formData = new FormData();
-    Object.keys(data).forEach(key => {
-      if (key === 'variants' || key === 'images') {
-        formData.append(key, JSON.stringify(data[key]));
-      } else if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key]);
-      }
-    });
+  async updateProduct(id, formData) {
+    // FormData is already created in the calling function
     return await this.request(`/products/${id}/edit`, {
       method: 'PUT',
       body: formData,
@@ -110,13 +106,8 @@ export const adminApi = {
   async getBanners() {
     return await this.request('/banners/');
   },
-  async uploadBanner(data) {
-    const formData = new FormData();
-    Object.keys(data).forEach(key => {
-      if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key]);
-      }
-    });
+  async uploadBanner(formData) {
+    // FormData is already created in the calling function
     return await this.request('/banners/upload', {
       method: 'POST',
       body: formData,
@@ -128,4 +119,3 @@ export const adminApi = {
     });
   },
 };
-
