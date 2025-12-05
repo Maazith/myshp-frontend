@@ -34,19 +34,41 @@ export const adminAuth = {
   },
   async login(username, password) {
     try {
-      const response = await fetch(`${api.baseUrl}/auth/login`, {
+      // Get API base URL
+      const getApiBaseUrl = () => {
+        if (typeof window !== 'undefined' && window.API_BASE_URL) {
+          return window.API_BASE_URL;
+        }
+        if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
+          return window.VERCEL_ENV_API_BASE_URL;
+        }
+        return 'https://myshp-backend.onrender.com/api';
+      };
+      
+      const apiBase = getApiBaseUrl();
+      
+      const response = await fetch(`${apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error(data.detail || data.message || 'Login failed');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || data.message || `Login failed: ${response.status}`);
       }
+      
+      const data = await response.json();
+      
       // Get user info
-      const userResponse = await fetch(`${api.baseUrl}/auth/me`, {
+      const userResponse = await fetch(`${apiBase}/auth/me`, {
         headers: { 'Authorization': `Bearer ${data.access}` },
       });
+      
+      if (!userResponse.ok) {
+        throw new Error('Failed to verify user credentials');
+      }
+      
       const userData = await userResponse.json();
       if (!userData.is_staff) {
         throw new Error('Access denied. Staff privileges required.');
@@ -54,7 +76,8 @@ export const adminAuth = {
       this.setAuth(data.access, data.refresh, userData);
       return { success: true, user: userData };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Login error:', error);
+      return { success: false, error: error.message || 'Failed to connect to server. Please check your connection.' };
     }
   },
   requireAuth() {
