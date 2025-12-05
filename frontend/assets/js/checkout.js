@@ -49,6 +49,7 @@ form?.addEventListener('submit', async (event) => {
   
   // Validate all required fields
   const name = form.querySelector('#name').value.trim();
+  const email = form.querySelector('#email').value.trim();
   const phone_number = form.querySelector('#phone_number').value.trim();
   const address = form.querySelector('#address').value.trim();
   const street_name = form.querySelector('#street_name').value.trim();
@@ -57,8 +58,15 @@ form?.addEventListener('submit', async (event) => {
   const pin_code = form.querySelector('#pin_code').value.trim();
   
   // Client-side validation
-  if (!name || !phone_number || !address || !street_name || !city_town || !district || !pin_code) {
+  if (!name || !email || !phone_number || !address || !street_name || !city_town || !district || !pin_code) {
     errorEl.textContent = 'Please fill all required fields marked with *.';
+    return;
+  }
+  
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    errorEl.textContent = 'Please enter a valid email address.';
     return;
   }
   
@@ -79,6 +87,7 @@ form?.addEventListener('submit', async (event) => {
       method: 'POST',
       body: {
         name: name,
+        email: email,
         phone_number: phone_number,
         address: address,
         street_name: street_name,

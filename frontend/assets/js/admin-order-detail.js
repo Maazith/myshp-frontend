@@ -41,8 +41,8 @@ async function loadOrderDetail() {
           <input type="text" value="${order.order_number}" readonly style="background: rgba(255,255,255,0.02);">
         </div>
         <div class="form-group">
-          <label>Customer</label>
-          <input type="text" value="${order.user?.username || 'Guest'} (${order.user?.email || 'N/A'})" readonly style="background: rgba(255,255,255,0.02);">
+          <label>Order Date</label>
+          <input type="text" value="${new Date(order.created_at).toLocaleString()}" readonly style="background: rgba(255,255,255,0.02);">
         </div>
         <div class="form-group">
           <label>Status</label>
@@ -58,8 +58,62 @@ async function loadOrderDetail() {
           <label>Payment Verified</label>
           <input type="text" value="${order.payment_verified ? 'Yes' : 'No'}" readonly style="background: rgba(255,255,255,0.02);">
         </div>
+        ${order.upi_reference ? `
+        <div class="form-group">
+          <label>UPI Reference</label>
+          <input type="text" value="${order.upi_reference}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        ` : ''}
         <button class="btn" id="update-status">Update Status</button>
         <p id="status-error" style="color: var(--danger); margin-top: 1rem;"></p>
+      </div>
+      <div class="glass-card" style="margin-bottom: 1.5rem;">
+        <h2 style="margin-bottom: 1rem;">Customer Information</h2>
+        <div class="form-group">
+          <label>Customer Name</label>
+          <input type="text" value="${order.name || order.user?.username || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="text" value="${order.email || order.user?.email || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" value="${order.phone_number || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        <div class="form-group">
+          <label>Account Username</label>
+          <input type="text" value="${order.user?.username || 'Guest User'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+      </div>
+      <div class="glass-card" style="margin-bottom: 1.5rem;">
+        <h2 style="margin-bottom: 1rem;">Shipping Address</h2>
+        <div class="form-group">
+          <label>Full Address</label>
+          <textarea readonly style="background: rgba(255,255,255,0.02); min-height: 60px;">${order.address || 'N/A'}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Street Name</label>
+          <input type="text" value="${order.street_name || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        <div class="form-group">
+          <label>City/Town</label>
+          <input type="text" value="${order.city_town || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        <div class="form-group">
+          <label>District</label>
+          <input type="text" value="${order.district || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        <div class="form-group">
+          <label>PIN Code</label>
+          <input type="text" value="${order.pin_code || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
+        </div>
+        ${order.shipping_address ? `
+        <div class="form-group">
+          <label>Complete Address (Legacy)</label>
+          <textarea readonly style="background: rgba(255,255,255,0.02); min-height: 60px;">${order.shipping_address}</textarea>
+        </div>
+        ` : ''}
       </div>
       <div class="glass-card" style="margin-bottom: 1.5rem;">
         <h2 style="margin-bottom: 1rem;">Order Items</h2>
