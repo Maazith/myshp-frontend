@@ -1084,8 +1084,14 @@ const handleProductForm = () => {
     } catch (err) {
       console.error('Product creation error:', err);
       message.style.color = 'var(--danger)';
-      const errorMsg = err.message || 'Failed to create product. Please check: 1) Backend is running, 2) All required fields are filled, 3) You are logged in as admin.';
-      message.textContent = errorMsg;
+      let errorMsg = err.message || 'Failed to create product. Please check: 1) Backend is running, 2) All required fields are filled, 3) You are logged in as admin.';
+      
+      // Add auto-fix link if connection error
+      if (errorMsg.includes('Failed to connect') || errorMsg.includes('fetch')) {
+        errorMsg += ' <a href="../auto-fix-connection.html" style="color:#4CAF50;text-decoration:underline;" target="_blank">🔧 Auto-Fix Connection</a>';
+      }
+      
+      message.innerHTML = errorMsg;
       submitBtn.disabled = false;
       submitBtn.textContent = 'Save Product';
     }
@@ -1213,8 +1219,14 @@ const handleBannerForm = () => {
     } catch (err) {
       console.error('Banner upload error:', err);
       message.style.color = 'var(--danger)';
-      const errorMsg = err.message || 'Failed to upload banner. Please check: 1) Backend is running, 2) File is valid image, 3) You are logged in as admin.';
-      message.textContent = errorMsg;
+      let errorMsg = err.message || 'Failed to upload banner. Please check: 1) Backend is running, 2) File is valid image, 3) You are logged in as admin.';
+      
+      // Add auto-fix link if connection error
+      if (errorMsg.includes('Failed to connect') || errorMsg.includes('fetch')) {
+        errorMsg += ' <a href="../auto-fix-connection.html" style="color:#4CAF50;text-decoration:underline;" target="_blank">🔧 Auto-Fix Connection</a>';
+      }
+      
+      message.innerHTML = errorMsg;
       submitBtn.disabled = false;
       submitBtn.textContent = 'Upload Banner';
     }
@@ -1265,15 +1277,17 @@ const handleAdminLogin = () => {
         // More specific error messages
         if (errorMsg.includes('Failed to connect') || errorMsg.includes('fetch')) {
           errorMsg = 'Cannot connect to server. Please check your internet connection and ensure the backend is running.';
+          errorMsg += ' <a href="../auto-fix-connection.html" style="color:#4CAF50;text-decoration:underline;" target="_blank">🔧 Auto-Fix Connection</a>';
         } else if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('No active account')) {
           errorMsg = 'Invalid username or password. Please check your credentials.';
         } else if (errorMsg.includes('404')) {
           errorMsg = 'API endpoint not found. Check if backend is running.';
+          errorMsg += ' <a href="../auto-fix-connection.html" style="color:#4CAF50;text-decoration:underline;" target="_blank">🔧 Auto-Fix Connection</a>';
         } else if (errorMsg.includes('500')) {
           errorMsg = 'Server error. Check backend console for details.';
         }
         
-        errorEl.textContent = errorMsg;
+        errorEl.innerHTML = errorMsg;
         errorEl.style.display = 'block';
         errorEl.style.color = 'var(--danger)';
       }

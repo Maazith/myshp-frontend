@@ -92,13 +92,18 @@
                 <span id="backend-url" style="font-family: monospace;">Loading...</span>
             </div>
             <div class="status-item">
-                <span>Environment:</span>
-                <span id="environment">Loading...</span>
+                <span>Frontend Environment:</span>
+                <span id="frontend-environment">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span>Backend Environment:</span>
+                <span id="backend-environment">Loading...</span>
             </div>
         </div>
         
         <div class="status-card">
             <h2>Connection Tests</h2>
+            <button class="test-btn" onclick="autoFixConnection()" style="background:#4CAF50;color:white;">🔧 Auto-Fix Connection</button>
             <button class="test-btn" onclick="testAll()">🧪 Test All Connections</button>
             <button class="test-btn" onclick="testApiRoot()">Test API Root</button>
             <button class="test-btn" onclick="testProducts()">Test Products</button>
@@ -106,6 +111,11 @@
             <button class="test-btn" onclick="testBanners()">Test Banners</button>
             
             <div id="test-results" style="margin-top: 1rem;"></div>
+        </div>
+        
+        <div class="status-card" id="solutions-card" style="display: none;">
+            <h2>🔍 Solutions</h2>
+            <div id="solutions-content"></div>
         </div>
         
         <div class="status-card">
@@ -120,17 +130,46 @@
     </div>
     
     <script type="module">
-        // Import API module to get configuration
+        // Import API module and connection resolver
         import { api } from './assets/js/api.js';
+        import { ConnectionResolver } from './assets/js/connection-resolver.js';
+        
+        const resolver = new ConnectionResolver();
         
         // Display configuration
         function displayConfig() {
-            document.getElementById('api-url').textContent = api.baseUrl || 'Not set';
-            document.getElementById('backend-url').textContent = window.BACKEND_BASE_URL || api.baseUrl?.replace('/api', '') || 'Not set';
+            const apiUrl = api.baseUrl || 'Not set';
+            const backendUrl = window.BACKEND_BASE_URL || api.baseUrl?.replace('/api', '') || 'Not set';
             
-            const hostname = window.location.hostname;
-            const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
-            document.getElementById('environment').textContent = isLocal ? 'Local Development' : 'Production';
+            document.getElementById('api-url').textContent = apiUrl;
+            document.getElementById('backend-url').textContent = backendUrl;
+            
+            // Frontend environment (where this page is loaded from)
+            const frontendHostname = window.location.hostname;
+            const isFrontendLocal = frontendHostname === 'localhost' || frontendHostname === '127.0.0.1' || frontendHostname === '';
+            const frontendEnv = isFrontendLocal ? 'Local Development' : 
+                               frontendHostname.includes('vercel.app') ? 'Vercel (Production)' :
+                               frontendHostname.includes('netlify.app') ? 'Netlify (Production)' :
+                               'Production';
+            document.getElementById('frontend-environment').textContent = frontendEnv;
+            
+            // Backend environment (where the API URL points to)
+            if (apiUrl !== 'Not set') {
+                try {
+                    const backendUrlObj = new URL(apiUrl);
+                    const backendHostname = backendUrlObj.hostname;
+                    const isBackendLocal = backendHostname === 'localhost' || backendHostname === '127.0.0.1';
+                    const backendEnv = isBackendLocal ? 'Local Development' :
+                                     backendHostname.includes('onrender.com') ? 'Render (Production)' :
+                                     backendHostname.includes('herokuapp.com') ? 'Heroku (Production)' :
+                                     'Production';
+                    document.getElementById('backend-environment').textContent = backendEnv;
+                } catch (e) {
+                    document.getElementById('backend-environment').textContent = 'Unknown';
+                }
+            } else {
+                document.getElementById('backend-environment').textContent = 'Not Configured';
+            }
         }
         
         // Display system info
@@ -307,10 +346,81 @@
             resultsDiv.innerHTML = `<h3>Test Summary</h3>${summary}`;
         };
         
+        // Auto-fix connection function
+        window.autoFixConnection = async () => {
+            const resultsDiv = document.getElementById('test-results');
+            const solutionsCard = document.getElementById('solutions-card');
+            const solutionsContent = document.getElementById('solutions-content');
+            
+            resultsDiv.innerHTML = '<p><span style="display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:#fff;animation:spin 1s linear infinite;"></span> Searching for working backend...</p>';
+            solutionsCard.style.display = 'none';
+            
+            const result = await resolver.autoResolve();
+            
+            if (result.success) {
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>✅ Connection Fixed!</span>
+                        <span class="status-badge status-success">Connected</span>
+                    </div>
+                    <p><strong>Working Backend:</strong> <code>${result.url}</code></p>
+                    <p>Backend URL has been updated. Please refresh the page.</p>
+                    <button class="test-btn" onclick="location.reload()" style="background:#4CAF50;color:white;">Refresh Page</button>
+                `;
+                solutionsCard.style.display = 'none';
+                
+                // Update API URL
+                window.API_BASE_URL = result.url;
+                window.BACKEND_BASE_URL = result.url.replace('/api', '');
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span>❌ Connection Failed</span>
+                        <span class="status-badge status-error">Not Connected</span>
+                    </div>
+                    <p><strong>Attempted URL:</strong> <code>${result.url}</code></p>
+                    <p>No working backend found. See solutions below.</p>
+                `;
+                
+                if (result.error) {
+                    solutionsCard.style.display = 'block';
+                    let solutionsHtml = `
+                        <h3>${result.error.title}</h3>
+                        <p>${result.error.message}</p>
+                    `;
+                    
+                    result.error.solutions.forEach((solution) => {
+                        solutionsHtml += `
+                            <div class="solution-card" style="background:rgba(255,255,255,0.03);border:1px solid var(--light-grey);border-radius:8px;padding:1.5rem;margin:1rem 0;">
+                                <h3 style="color:#4CAF50;margin-bottom:1rem;">${solution.title}</h3>
+                                <ol style="margin-left:1.5rem;line-height:1.8;">
+                                    ${solution.steps.map(step => `<li style="margin:0.5rem 0;">${step}</li>`).join('')}
+                                </ol>
+                            </div>
+                        `;
+                    });
+                    
+                    solutionsContent.innerHTML = solutionsHtml;
+                }
+            }
+            
+            // Refresh config display
+            displayConfig();
+        };
+        
         // Initialize on load
         displayConfig();
         displaySystemInfo();
         displayModulesStatus();
+        
+        // Add CSS animation for loading spinner
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

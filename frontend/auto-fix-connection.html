@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Fix Backend Connection | EdithCloths</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <style>
+        body {
+            padding: 2rem;
+            background: #1a1a1a;
+            color: #fff;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--light-grey);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin: 1rem 0;
+        }
+        .status-success {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4CAF50;
+        }
+        .status-error {
+            background: rgba(229, 57, 53, 0.2);
+            border-color: #E53935;
+        }
+        .status-pending {
+            background: rgba(255, 152, 0, 0.2);
+            border-color: #ff9800;
+        }
+        .solution-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--light-grey);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .solution-card h3 {
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+        .solution-card ol {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+        }
+        .solution-card li {
+            margin: 0.5rem 0;
+        }
+        .btn-fix {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 1rem 0.5rem;
+        }
+        .btn-fix:hover {
+            background: #45a049;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--light-grey);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 0.5rem;
+        }
+        .badge-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .badge-error {
+            background: #E53935;
+            color: white;
+        }
+        .badge-pending {
+            background: #ff9800;
+            color: white;
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-container">
+        <h1>🔧 Auto-Fix Backend Connection</h1>
+        
+        <div class="status-card" id="status-card">
+            <h2>Status</h2>
+            <div id="status-content">
+                <p>Initializing connection resolver...</p>
+            </div>
+        </div>
+        
+        <div class="status-card" id="solutions-card" style="display: none;">
+            <h2>🔍 Solutions</h2>
+            <div id="solutions-content"></div>
+        </div>
+        
+        <div class="status-card">
+            <h2>Actions</h2>
+            <button class="btn-fix" onclick="autoFix()">🔄 Auto-Fix Connection</button>
+            <button class="btn-secondary" onclick="testConnection()">Test Current Connection</button>
+            <button class="btn-secondary" onclick="tryLocalBackend()">Try Local Backend</button>
+            <button class="btn-secondary" onclick="clearCache()">Clear Cache & Retry</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { ConnectionResolver } from './assets/js/connection-resolver.js';
+        
+        const resolver = new ConnectionResolver();
+        
+        // Auto-fix on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await autoFix();
+        });
+        
+        window.autoFix = async () => {
+            const statusCard = document.getElementById('status-card');
+            const statusContent = document.getElementById('status-content');
+            const solutionsCard = document.getElementById('solutions-card');
+            const solutionsContent = document.getElementById('solutions-content');
+            
+            statusCard.className = 'status-card status-pending';
+            statusContent.innerHTML = '<p><span class="loading"></span> Searching for working backend...</p>';
+            solutionsCard.style.display = 'none';
+            
+            const result = await resolver.autoResolve();
+            
+            if (result.success) {
+                statusCard.className = 'status-card status-success';
+                statusContent.innerHTML = `
+                    <h3>✅ Connection Successful!</h3>
+                    <p><strong>Backend URL:</strong> <code>${result.url}</code></p>
+                    <p><strong>Status:</strong> <span class="status-badge badge-success">Connected</span></p>
+                    <p>${result.message}</p>
+                    <button class="btn-secondary" onclick="location.reload()">Reload Page</button>
+                `;
+                solutionsCard.style.display = 'none';
+                
+                // Save working URL
+                window.API_BASE_URL = result.url;
+                window.BACKEND_BASE_URL = result.url.replace('/api', '');
+            } else {
+                statusCard.className = 'status-card status-error';
+                statusContent.innerHTML = `
+                    <h3>❌ Connection Failed</h3>
+                    <p><strong>Attempted URL:</strong> <code>${result.url}</code></p>
+                    <p><strong>Status:</strong> <span class="status-badge badge-error">Not Connected</span></p>
+                    <p>${result.message}</p>
+                `;
+                
+                // Show solutions
+                if (result.error) {
+                    solutionsCard.style.display = 'block';
+                    let solutionsHtml = `
+                        <h3>${result.error.title}</h3>
+                        <p>${result.error.message}</p>
+                    `;
+                    
+                    result.error.solutions.forEach((solution, index) => {
+                        solutionsHtml += `
+                            <div class="solution-card">
+                                <h3>${solution.title}</h3>
+                                <ol>
+                                    ${solution.steps.map(step => `<li>${step}</li>`).join('')}
+                                </ol>
+                            </div>
+                        `;
+                    });
+                    
+                    solutionsContent.innerHTML = solutionsHtml;
+                }
+            }
+        };
+        
+        window.testConnection = async () => {
+            const currentUrl = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+            const statusContent = document.getElementById('status-content');
+            
+            statusContent.innerHTML = '<p><span class="loading"></span> Testing connection...</p>';
+            
+            const isWorking = await resolver.testConnection(currentUrl);
+            
+            if (isWorking) {
+                statusContent.innerHTML = `
+                    <h3>✅ Connection Test Successful</h3>
+                    <p>Backend at <code>${currentUrl}</code> is accessible!</p>
+                `;
+            } else {
+                statusContent.innerHTML = `
+                    <h3>❌ Connection Test Failed</h3>
+                    <p>Cannot connect to <code>${currentUrl}</code></p>
+                    <p>Click "Auto-Fix Connection" to find a working backend.</p>
+                `;
+            }
+        };
+        
+        window.tryLocalBackend = async () => {
+            const localUrl = 'http://127.0.0.1:8000/api';
+            const statusContent = document.getElementById('status-content');
+            
+            statusContent.innerHTML = '<p><span class="loading"></span> Testing local backend...</p>';
+            
+            const isWorking = await resolver.testConnection(localUrl);
+            
+            if (isWorking) {
+                window.API_BASE_URL = localUrl;
+                window.BACKEND_BASE_URL = 'http://127.0.0.1:8000';
+                localStorage.setItem('working_backend_url', localUrl);
+                
+                statusContent.innerHTML = `
+                    <h3>✅ Local Backend Found!</h3>
+                    <p>Connected to local backend at <code>${localUrl}</code></p>
+                    <p><strong>Note:</strong> Make sure your local backend is running with: <code>python manage.py runserver</code></p>
+                    <button class="btn-secondary" onclick="location.reload()">Reload Page</button>
+                `;
+            } else {
+                statusContent.innerHTML = `
+                    <h3>❌ Local Backend Not Running</h3>
+                    <p>Cannot connect to local backend at <code>${localUrl}</code></p>
+                    <p><strong>To start local backend:</strong></p>
+                    <pre>cd backend
+python manage.py runserver</pre>
+                    <p>Then refresh this page and try again.</p>
+                `;
+            }
+        };
+        
+        window.clearCache = () => {
+            localStorage.removeItem('working_backend_url');
+            window.API_BASE_URL = null;
+            window.BACKEND_BASE_URL = null;
+            
+            document.getElementById('status-content').innerHTML = `
+                <h3>✅ Cache Cleared</h3>
+                <p>Cleared stored backend URL. Click "Auto-Fix Connection" to search again.</p>
+            `;
+        };
+    </script>
+</body>
+</html>
+

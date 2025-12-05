@@ -1,22 +1,7 @@
 // API Base URL - Use environment variable or fallback to production URL
 // Vercel: Set NEXT_PUBLIC_API_BASE_URL or VERCEL_ENV_API_BASE_URL in environment variables
 // For local development, set window.API_BASE_URL before loading this script
-const API_BASE = (() => {
-  // Check for environment variable (Vercel sets this)
-  if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_BASE_URL) {
-    return process.env.NEXT_PUBLIC_API_BASE_URL;
-  }
-  // Check for window variable (can be set in index.html)
-  if (typeof window !== 'undefined' && window.API_BASE_URL) {
-    return window.API_BASE_URL;
-  }
-  // Check for Vercel environment variable
-  if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
-    return window.VERCEL_ENV_API_BASE_URL;
-  }
-  // Production fallback
-  return 'https://myshp-backend.onrender.com/api';
-})();
+
 const ACCESS_KEY = 'edithcloths_token';
 const REFRESH_KEY = 'edithcloths_refresh';
 const USER_KEY = 'edithcloths_user';
@@ -33,8 +18,28 @@ const buildHeaders = (options = {}) => {
   return headers;
 };
 
+// Function to get current API base URL (dynamic)
+const getApiBaseUrl = () => {
+  // Check for window variable first (can be updated dynamically)
+  if (typeof window !== 'undefined' && window.API_BASE_URL) {
+    return window.API_BASE_URL;
+  }
+  // Check for Vercel environment variable
+  if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
+    return window.VERCEL_ENV_API_BASE_URL;
+  }
+  // Check for environment variable (Vercel sets this)
+  if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  // Production fallback
+  return 'https://myshp-backend.onrender.com/api';
+};
+
 export const api = {
-  baseUrl: API_BASE,
+  get baseUrl() {
+    return getApiBaseUrl();
+  },
   get accessToken() {
     return localStorage.getItem(ACCESS_KEY);
   },
@@ -70,7 +75,7 @@ export const api = {
     }
     
     try {
-      const response = await fetch(`${API_BASE}${path}`, options);
+      const response = await fetch(`${getApiBaseUrl()}${path}`, options);
       if (response.status === 204) return null;
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -101,7 +106,18 @@ export const api = {
       return data;
     } catch (error) {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error(`Failed to connect to server. Make sure the backend is running at ${API_BASE}`);
+        // Enhanced error message with helpful solutions
+        const backendUrl = getApiBaseUrl().replace('/api', '');
+        const errorMsg = `Failed to connect to server at ${getApiBaseUrl()}. `;
+        let solution = '';
+        
+        if (backendUrl.includes('onrender.com')) {
+          solution = `\n\nPossible solutions:\n1. Backend not deployed - Deploy at https://dashboard.render.com\n2. Service sleeping (free tier) - Wait 30-60 seconds or wake it up\n3. Check service name matches: myshp-backend\n4. Use local backend for testing: http://127.0.0.1:8000/api`;
+        } else if (backendUrl.includes('127.0.0.1') || backendUrl.includes('localhost')) {
+          solution = `\n\nTo fix:\n1. Start backend: cd backend && python manage.py runserver\n2. Make sure backend is running on port 8000\n3. Check http://127.0.0.1:8000/api/ in browser`;
+        }
+        
+        throw new Error(errorMsg + solution);
       }
       throw error;
     }
