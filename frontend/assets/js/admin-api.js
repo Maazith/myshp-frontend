@@ -1,7 +1,7 @@
 import { adminAuth } from './admin-auth.js';
 
 const ADMIN_TOKEN_KEY = 'edithcloths_admin_token';
-const API_BASE = 'https://myshp-backend.onrender.com/api';
+const API_BASE = 'https://api.edithcloths.com/api';
 
 export const adminApi = {
   async request(path, options = {}) {

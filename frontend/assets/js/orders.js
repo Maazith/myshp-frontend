@@ -91,7 +91,7 @@ const loadOrders = async (forceRender = false) => {
       if (err.message && err.message.includes('401')) {
         listEl.innerHTML = '<p style="color:var(--text-light);">Orders are not available. Please contact support for order inquiries.</p>';
       } else {
-        listEl.innerHTML = `<p style="color:var(--danger);">Error loading orders: ${err.message}</p>`;
+      listEl.innerHTML = `<p style="color:var(--danger);">Error loading orders: ${err.message}</p>`;
       }
     }
   }

@@ -33,7 +33,7 @@ const getApiBaseUrl = () => {
     return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
   // Production fallback
-  return 'https://myshp-backend.onrender.com/api';
+  return 'https://api.edithcloths.com/api';
 };
 
 export const api = {

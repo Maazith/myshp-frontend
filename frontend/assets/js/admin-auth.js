@@ -42,7 +42,7 @@ export const adminAuth = {
         if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
           return window.VERCEL_ENV_API_BASE_URL;
         }
-        return 'https://myshp-backend.onrender.com/api';
+        return 'https://api.edithcloths.com/api';
       };
       
       const apiBase = getApiBaseUrl();

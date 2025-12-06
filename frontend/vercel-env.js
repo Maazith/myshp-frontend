@@ -16,7 +16,7 @@
       window.API_BASE_URL = apiBaseUrl;
     } else {
       // Production fallback
-      window.API_BASE_URL = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+      window.API_BASE_URL = window.API_BASE_URL || 'https://api.edithcloths.com/api';
     }
   }
 })();

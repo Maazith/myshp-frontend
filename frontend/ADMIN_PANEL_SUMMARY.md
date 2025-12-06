@@ -137,3 +137,4 @@ frontend/
 4. Verify mobile responsiveness
 5. Check 404 handling for invalid IDs
 
+

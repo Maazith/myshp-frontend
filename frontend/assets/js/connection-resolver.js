@@ -5,7 +5,7 @@
 export class ConnectionResolver {
   constructor() {
     this.possibleUrls = [
-      'https://myshp-backend.onrender.com/api',
+      'https://api.edithcloths.com/api',
       'http://127.0.0.1:8000/api',
       'http://localhost:8000/api',
     ];
@@ -25,7 +25,7 @@ export class ConnectionResolver {
     }
 
     // Get current configured URL
-    const currentUrl = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+    const currentUrl = window.API_BASE_URL || 'https://api.edithcloths.com/api';
     
     // Try current URL first
     if (await this.testConnection(currentUrl)) {
@@ -187,7 +187,7 @@ export class ConnectionResolver {
       };
     } else {
       console.error('❌ No working backend found');
-      const currentUrl = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+      const currentUrl = window.API_BASE_URL || 'https://api.edithcloths.com/api';
       const errorInfo = this.getErrorMessage(currentUrl);
       return {
         success: false,
