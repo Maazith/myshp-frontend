@@ -131,7 +131,11 @@ export const mountNavbar = async () => {
           return `<a class="${isActive(link.href)}" href="${getLinkHref(link)}">${link.label}</a>`;
         }).join('')}
         ${isAuthenticated 
-          ? `<a href="#" id="user-logout" style="color: var(--danger);">Logout</a>` 
+          ? (() => {
+              const myOrdersHref = getLinkHref({href: 'myorders.html', basePath: 'pages/'});
+              return `<a class="${isActive('myorders.html')}" href="${myOrdersHref}">My Orders</a>
+                      <a href="#" id="user-logout" style="color: var(--danger);">Logout</a>`;
+            })()
           : `<a href="${backendBaseUrl}/login/?next=${encodeURIComponent(window.location.href)}" id="user-login">Login</a>`
         }
       </div>` : ''}
