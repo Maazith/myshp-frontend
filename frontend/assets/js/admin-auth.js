@@ -32,13 +32,28 @@ const handleAdminLogin = () => {
       // Call login API
       const payload = await api.login({ username, password });
       
-      // Check if user data is returned
-      if (!payload || !payload.user) {
-        throw new Error('Login successful but user data not returned. Please try again.');
+      console.log('Login response:', payload);
+      
+      // Check if tokens were received
+      if (!payload || (!payload.access && !payload.refresh)) {
+        throw new Error('Login failed: No authentication tokens received.');
+      }
+      
+      // If user data is not in the response, fetch it from /auth/me
+      let userData = payload.user;
+      if (!userData) {
+        console.log('User data not in login response, fetching from /auth/me');
+        try {
+          userData = await api.request('/auth/me');
+          console.log('User data from /auth/me:', userData);
+        } catch (meError) {
+          console.error('Failed to fetch user data:', meError);
+          throw new Error('Login successful but could not verify user account. Please try again.');
+        }
       }
       
       // Check if user has admin privileges
-      if (!payload.user.is_staff) {
+      if (!userData || !userData.is_staff) {
         api.logout(); // Clear invalid token
         if (errorEl) {
           errorEl.textContent = 'Access denied. This account does not have admin privileges. Please contact an administrator.';
@@ -50,6 +65,11 @@ const handleAdminLogin = () => {
           submitBtn.textContent = 'Login';
         }
         return;
+      }
+      
+      // Store user data if not already stored
+      if (userData && !payload.user) {
+        localStorage.setItem('edithcloths_user', JSON.stringify(userData));
       }
       
       // Success - redirect to dashboard

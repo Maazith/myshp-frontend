@@ -128,23 +128,36 @@ export const api = {
   },
   // Auth methods
   async login(credentials) {
-    const response = await this.request('/auth/login', {
+    // Login should not include Authorization header
+    const options = {
       method: 'POST',
-      body: credentials,
-    });
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    };
+    
+    const response = await fetch(`${getApiBaseUrl()}/auth/login`, options);
+    
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.detail || data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
     
     // Store tokens
-    if (response.access && response.refresh) {
-      localStorage.setItem(ACCESS_KEY, response.access);
-      localStorage.setItem(REFRESH_KEY, response.refresh);
+    if (data.access && data.refresh) {
+      localStorage.setItem(ACCESS_KEY, data.access);
+      localStorage.setItem(REFRESH_KEY, data.refresh);
       
       // Store user data if provided
-      if (response.user) {
-        localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+      if (data.user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       }
     }
     
-    return response;
+    return data;
   },
   setAuthTokens(accessToken, refreshToken, user) {
     localStorage.setItem(ACCESS_KEY, accessToken);
