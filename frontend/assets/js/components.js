@@ -342,4 +342,29 @@ export const initComponents = async () => {
   initCarousels();
 };
 
+// Extract JWT tokens from URL after login redirect (runs on all pages)
+const extractTokensFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  const refresh = urlParams.get('refresh');
+  
+  if (token && refresh) {
+    // Store tokens from URL (after login redirect)
+    localStorage.setItem('edithcloths_token', token);
+    localStorage.setItem('edithcloths_refresh', refresh);
+    
+    // Remove tokens from URL for cleaner URL
+    const newSearch = new URLSearchParams(window.location.search);
+    newSearch.delete('token');
+    newSearch.delete('refresh');
+    const newUrl = window.location.pathname + (newSearch.toString() ? '?' + newSearch.toString() : '');
+    window.history.replaceState({}, '', newUrl);
+    
+    console.log('[Auth] Tokens extracted from URL and stored');
+  }
+};
+
+// Run token extraction immediately (before DOMContentLoaded)
+extractTokensFromUrl();
+
 document.addEventListener('DOMContentLoaded', initComponents);

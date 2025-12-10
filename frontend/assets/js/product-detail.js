@@ -261,7 +261,15 @@ colorSelect?.addEventListener('change', (event) => {
 });
 
 document.getElementById('add-to-cart')?.addEventListener('click', async () => {
-  // No auth required - add to cart works without login
+  // Check if user is authenticated - require login to add to cart
+  if (!api.isAuthenticated) {
+    // Redirect to login page with return URL to come back to this product page
+    const currentUrl = window.location.href;
+    const backendBaseUrl = api.baseUrl.replace('/api', '');
+    window.location.href = `${backendBaseUrl}/login/?next=${encodeURIComponent(currentUrl)}`;
+    return;
+  }
+  
   const variant = currentVariant();
   if (!variant) {
     holder.error.textContent = 'Choose a valid variant.';
