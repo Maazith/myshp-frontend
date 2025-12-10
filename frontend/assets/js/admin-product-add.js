@@ -16,30 +16,77 @@ async function loadCategories() {
   }
 }
 
-function addVariant() {
+// Create category functionality
+function setupCreateCategory() {
+  const categorySelect = document.getElementById('category');
+  const categoryGroup = categorySelect?.closest('.form-group');
+  
+  if (!categoryGroup) return;
+  
+  // Add "Create Category" button next to category select
+  const createBtn = document.createElement('button');
+  createBtn.type = 'button';
+  createBtn.className = 'btn ghost small';
+  createBtn.textContent = '+ Create Category';
+  createBtn.style.marginTop = '0.5rem';
+  createBtn.addEventListener('click', () => {
+    const name = prompt('Enter category name:');
+    if (name && name.trim()) {
+      createCategory(name.trim());
+    }
+  });
+  
+  categoryGroup.appendChild(createBtn);
+}
+
+async function createCategory(name) {
+  try {
+    const category = await adminApi.createCategory(name);
+    // Reload categories and select the new one
+    await loadCategories();
+    document.getElementById('category').value = category.id;
+    alert('Category created successfully!');
+  } catch (error) {
+    alert('Error creating category: ' + error.message);
+  }
+}
+
+function addVariant(variantData = null) {
   variantCount++;
+  const size = variantData?.size || '';
+  const color = variantData?.color || '';
+  const stock = variantData?.stock || 0;
+  const price = variantData?.price_override || variantData?.price || '';
+  
   const variantHtml = `
-    <div class="glass-card" style="padding: 1rem; margin-bottom: 1rem;" data-variant="${variantCount}">
-      <div class="form-group">
-        <label>Size</label>
-        <input type="text" class="variant-size" placeholder="e.g., S, M, L">
+    <div class="glass-card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid rgba(230,230,230,0.2);" data-variant="${variantCount}">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div class="form-group">
+          <label>Size *</label>
+          <input type="text" class="variant-size" placeholder="e.g., S, M, L, XL" value="${size}" required>
+        </div>
+        <div class="form-group">
+          <label>Color *</label>
+          <input type="text" class="variant-color" placeholder="e.g., Red, Blue, Black" value="${color}" required>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Color</label>
-        <input type="text" class="variant-color" placeholder="e.g., Red, Blue">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" class="variant-stock" min="0" value="${stock}">
+        </div>
+        <div class="form-group">
+          <label>Price Override (optional)</label>
+          <input type="number" class="variant-price" step="0.01" min="0" placeholder="Leave empty to use base price" value="${price}">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Stock</label>
-        <input type="number" class="variant-stock" min="0" value="0">
-      </div>
-      <div class="form-group">
-        <label>Price Override (optional)</label>
-        <input type="number" class="variant-price" step="0.01" min="0" placeholder="Leave empty to use base price">
-      </div>
-      <button type="button" class="btn ghost small" onclick="removeVariant(${variantCount})">Remove</button>
+      <button type="button" class="btn ghost small" onclick="removeVariant(${variantCount})" style="color: var(--danger);">Remove Variant</button>
     </div>
   `;
-  document.getElementById('variants-list').insertAdjacentHTML('beforeend', variantHtml);
+  const variantsList = document.getElementById('variants-list');
+  if (variantsList) {
+    variantsList.insertAdjacentHTML('beforeend', variantHtml);
+  }
 }
 
 window.removeVariant = (id) => {
@@ -80,12 +127,31 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
   errorEl.textContent = '';
   
   try {
-    const variants = Array.from(document.querySelectorAll('[data-variant]')).map(el => ({
-      size: el.querySelector('.variant-size').value || null,
-      color: el.querySelector('.variant-color').value || null,
-      stock: parseInt(el.querySelector('.variant-stock').value) || 0,
-      price_override: el.querySelector('.variant-price').value || null,
-    })).filter(v => v.size || v.color);
+    // Collect variants - ensure all fields are properly collected
+    const variants = Array.from(document.querySelectorAll('[data-variant]')).map(el => {
+      const size = el.querySelector('.variant-size')?.value?.trim() || null;
+      const color = el.querySelector('.variant-color')?.value?.trim() || null;
+      const stockInput = el.querySelector('.variant-stock');
+      const stock = stockInput ? parseInt(stockInput.value) || 0 : 0;
+      const priceInput = el.querySelector('.variant-price');
+      const priceValue = priceInput?.value?.trim();
+      const price = priceValue && priceValue !== '' ? parseFloat(priceValue) : null;
+      
+      return {
+        size: size,
+        color: color,
+        stock: stock,
+        price: price, // Backend expects 'price' field for price_override
+      };
+    }).filter(v => v.size && v.color); // Both size and color are required
+    
+    // Validate variants before submission
+    if (variants.length === 0) {
+      const addVariant = confirm('No variants added. Product will be created with a default variant (M, Black). Continue?');
+      if (!addVariant) {
+        return;
+      }
+    }
     
     const formData = new FormData();
     formData.append('title', document.getElementById('title').value);
@@ -111,5 +177,7 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
   }
 });
 
+// Initialize on page load
 loadCategories();
+setupCreateCategory();
 
