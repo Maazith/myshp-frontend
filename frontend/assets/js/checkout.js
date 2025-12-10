@@ -46,10 +46,13 @@ const renderSummary = (cart) => {
 
 const loadSummary = async () => {
   try {
-    const cart = await api.request('/cart/');
+    const cart = await api.request('/cart/', { cacheBust: true });
     renderSummary(cart);
   } catch (err) {
-    summaryEl.innerHTML = `<p>${err.message}</p>`;
+    console.error('[Checkout] Error loading cart:', err);
+    if (summaryEl) {
+      summaryEl.innerHTML = `<p style="color:var(--danger);">Unable to load cart. Please refresh the page.</p>`;
+    }
   }
 };
 
@@ -101,6 +104,14 @@ form?.addEventListener('submit', async (event) => {
   }
   
   try {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn?.textContent;
+    
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Placing Order...';
+    }
+    
     const order = await api.request('/orders/checkout', {
       method: 'POST',
       body: {
@@ -114,10 +125,34 @@ form?.addEventListener('submit', async (event) => {
         pin_code: pin_code,
       },
     });
+    
     sessionStorage.setItem('latestOrder', JSON.stringify(order));
     window.location.href = `payment.html?orderId=${order.id}&amount=${order.total_amount}`;
   } catch (err) {
-    errorEl.textContent = err.message || 'Failed to place order. Please check all fields and try again.';
+    console.error('[Checkout] Error placing order:', err);
+    
+    // Better error messages
+    let errorMessage = 'Failed to place order. Please try again.';
+    if (err.message) {
+      if (err.message.includes('Unable to load orders')) {
+        errorMessage = 'Unable to connect to server. Please check your connection and try again.';
+      } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+        errorMessage = 'Your session has expired. Please login again.';
+      } else if (err.message.includes('cart') || err.message.includes('empty')) {
+        errorMessage = 'Your cart is empty. Please add items to cart first.';
+      } else {
+        errorMessage = err.message;
+      }
+    }
+    
+    errorEl.textContent = errorMessage;
+    
+    // Re-enable submit button
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Place Order';
+    }
   }
 });
 
