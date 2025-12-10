@@ -190,6 +190,25 @@ export const mountNavbar = async () => {
       window.location.href = homeUrl;
     });
   }
+  
+  // Ensure login link works (verify and fix if needed)
+  const loginBtn = document.getElementById('user-login');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', (e) => {
+      const href = loginBtn.getAttribute('href');
+      // If href is invalid or empty, construct it manually
+      if (!href || href === '#' || href.startsWith('javascript:')) {
+        e.preventDefault();
+        let backendBaseUrl = api.baseUrl.replace('/api', '');
+        if (!backendBaseUrl || backendBaseUrl === '/api' || backendBaseUrl.endsWith('/api')) {
+          backendBaseUrl = 'https://myshp-backend.onrender.com';
+        }
+        const currentUrl = encodeURIComponent(window.location.href);
+        window.location.href = `${backendBaseUrl}/login/?next=${currentUrl}`;
+      }
+      // Otherwise, let the default link behavior work
+    });
+  }
 };
 
 export const mountFooter = async () => {
