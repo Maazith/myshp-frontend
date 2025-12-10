@@ -155,8 +155,9 @@ const loadOrderDetail = async () => {
     // Render status update buttons
     const statusButtons = document.getElementById('status-buttons');
     if (statusButtons) {
-      // Status flow: PLACED → SHIPPED → REACHED → OUT_FOR_DELIVERY → DELIVERED
-      const statusFlow = ['PLACED', 'SHIPPED', 'REACHED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+      // Status flow: PLACED → SHIPPED → OUT_FOR_DELIVERY → DELIVERED
+      // Note: REACHED is not in backend model, using OUT_FOR_DELIVERY
+      const statusFlow = ['PLACED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
       let currentIndex = statusFlow.indexOf(order.status);
       
       // If status not in flow, find closest match
