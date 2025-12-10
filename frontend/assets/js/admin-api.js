@@ -91,4 +91,9 @@ export const adminApi = {
       method: 'DELETE',
     });
   },
+
+  // Users
+  async getUsers() {
+    return await api.request('/users/');
+  },
 };

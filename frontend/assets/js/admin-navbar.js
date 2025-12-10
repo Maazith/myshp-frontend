@@ -15,6 +15,7 @@ export const mountAdminNavbar = () => {
     { href: 'orders.html', label: 'Orders' },
     { href: 'products.html', label: 'Products' },
     { href: 'banners.html', label: 'Banners' },
+    { href: 'users.html', label: 'Users' },
   ];
   
   const getLinkHref = (href) => {
