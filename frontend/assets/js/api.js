@@ -63,7 +63,10 @@ export const api = {
     // Note: Redirect handled by calling code (navbar logout button)
   },
   async request(path, { method = 'GET', body, isForm = false, cacheBust = false } = {}) {
-    const options = { method };
+    const options = { 
+      method,
+      credentials: 'include'  // CRITICAL: Include cookies for session-based cart
+    };
     
     // Add cache-busting for GET requests to ensure fresh data
     let requestPath = path;
@@ -182,6 +185,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',  // Include cookies for session
       body: JSON.stringify(credentials),
     };
     

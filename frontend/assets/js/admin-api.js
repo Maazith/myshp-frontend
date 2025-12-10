@@ -65,7 +65,10 @@ export const adminApi = {
     localStorage.removeItem(ADMIN_USER_KEY);
   },
   async request(path, { method = 'GET', body, isForm = false, cacheBust = false } = {}) {
-    const options = { method };
+    const options = { 
+      method,
+      credentials: 'include'  // Include cookies for session
+    };
     
     let requestPath = path;
     if (method === 'GET' && cacheBust) {
@@ -210,6 +213,7 @@ export const adminApi = {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',  // Include cookies for session
         body: JSON.stringify({ refresh: refreshToken }),
       });
       
@@ -233,6 +237,7 @@ export const adminApi = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',  // Include cookies for session
       body: JSON.stringify(credentials),
     });
     
