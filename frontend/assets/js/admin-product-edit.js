@@ -102,7 +102,7 @@ const loadProduct = async () => {
   }
 };
 
-const addVariant = () => {
+const addVariant = (variant = {}) => {
   variantCount++;
   const container = document.getElementById('variants-container');
   if (!container) return;
@@ -114,20 +114,43 @@ const addVariant = () => {
         <button type="button" class="btn small ghost" onclick="removeVariant(${variantCount})">Remove</button>
       </div>
       <div class="form-group">
-        <label>Size</label>
-        <input type="text" name="variant_size_${variantCount}" placeholder="e.g., S, M, L, XL" required />
+        <label>Size *</label>
+        <select name="variant_size_${variantCount}" required>
+          <option value="">Select Size</option>
+          <option value="S" ${variant.size === 'S' ? 'selected' : ''}>Small (S)</option>
+          <option value="M" ${variant.size === 'M' ? 'selected' : ''}>Medium (M)</option>
+          <option value="L" ${variant.size === 'L' ? 'selected' : ''}>Large (L)</option>
+          <option value="XL" ${variant.size === 'XL' ? 'selected' : ''}>Extra Large (XL)</option>
+          <option value="XXL" ${variant.size === 'XXL' ? 'selected' : ''}>2X Large (XXL)</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>Color</label>
-        <input type="text" name="variant_color_${variantCount}" placeholder="e.g., Black, White" required />
+        <label>Color *</label>
+        <input type="text" name="variant_color_${variantCount}" placeholder="e.g., Black, White, Red" value="${variant.color || ''}" required list="variant-color-suggestions-edit-${variantCount}" />
+        <datalist id="variant-color-suggestions-edit-${variantCount}">
+          <option value="Black">
+          <option value="White">
+          <option value="Red">
+          <option value="Blue">
+          <option value="Green">
+          <option value="Yellow">
+          <option value="Pink">
+          <option value="Purple">
+          <option value="Orange">
+          <option value="Brown">
+          <option value="Grey">
+          <option value="Navy">
+          <option value="Beige">
+          <option value="Khaki">
+        </datalist>
       </div>
       <div class="form-group">
-        <label>Stock</label>
-        <input type="number" name="variant_stock_${variantCount}" min="0" value="0" required />
+        <label>Stock *</label>
+        <input type="number" name="variant_stock_${variantCount}" min="0" value="${variant.stock || 0}" required />
       </div>
       <div class="form-group">
         <label>Price Override (optional)</label>
-        <input type="number" name="variant_price_${variantCount}" step="0.01" min="0" placeholder="Leave empty to use base price" />
+        <input type="number" name="variant_price_${variantCount}" step="0.01" min="0" placeholder="Leave empty to use base price" value="${variant.price || ''}" />
       </div>
     </div>
   `;

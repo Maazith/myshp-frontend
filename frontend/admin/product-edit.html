@@ -60,6 +60,41 @@
           </div>
           
           <div class="form-group">
+            <label for="size">Default Size</label>
+            <select id="size">
+              <option value="">Select Size</option>
+              <option value="S">Small (S)</option>
+              <option value="M">Medium (M)</option>
+              <option value="L">Large (L)</option>
+              <option value="XL">Extra Large (XL)</option>
+              <option value="XXL">2X Large (XXL)</option>
+            </select>
+            <p style="color:var(--text-light);font-size:0.85rem;margin-top:0.25rem;">Used for default variant if no variants exist</p>
+          </div>
+          
+          <div class="form-group">
+            <label for="color">Default Color</label>
+            <input type="text" id="color" placeholder="e.g., Black, White, Red, Blue" list="color-suggestions-edit" />
+            <datalist id="color-suggestions-edit">
+              <option value="Black">
+              <option value="White">
+              <option value="Red">
+              <option value="Blue">
+              <option value="Green">
+              <option value="Yellow">
+              <option value="Pink">
+              <option value="Purple">
+              <option value="Orange">
+              <option value="Brown">
+              <option value="Grey">
+              <option value="Navy">
+              <option value="Beige">
+              <option value="Khaki">
+            </datalist>
+            <p style="color:var(--text-light);font-size:0.85rem;margin-top:0.25rem;">Used for default variant if no variants exist</p>
+          </div>
+          
+          <div class="form-group">
             <label for="hero_media">Product Image (leave empty to keep current)</label>
             <input type="file" id="hero_media" accept="image/*" />
           </div>

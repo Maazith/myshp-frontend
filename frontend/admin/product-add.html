@@ -27,42 +27,75 @@
         <form id="product-form" class="form-card" style="max-width:800px;margin:0 auto;">
           <p class="badge">Product Information</p>
           
-          <div class="form-group">
+            <div class="form-group">
             <label for="title">Title *</label>
             <input type="text" id="title" required placeholder="Product title" />
-          </div>
+            </div>
           
-          <div class="form-group">
-            <label for="description">Description</label>
+            <div class="form-group">
+              <label for="description">Description</label>
             <textarea id="description" rows="4" placeholder="Product description"></textarea>
-          </div>
+            </div>
           
-          <div class="form-group">
-            <label for="category">Category</label>
+            <div class="form-group">
+              <label for="category">Category</label>
             <select id="category">
               <option value="">Select Category</option>
             </select>
-          </div>
+            </div>
           
-          <div class="form-group">
+            <div class="form-group">
             <label for="gender">Gender *</label>
-            <select id="gender" required>
+              <select id="gender" required>
               <option value="">Select Gender</option>
               <option value="MEN">Men</option>
               <option value="WOMEN">Women</option>
               <option value="UNISEX">Unisex</option>
-            </select>
-          </div>
+              </select>
+            </div>
           
-          <div class="form-group">
+            <div class="form-group">
             <label for="base_price">Base Price *</label>
             <input type="number" id="base_price" step="0.01" min="0" required placeholder="0.00" />
-          </div>
+            </div>
           
-          <div class="form-group">
+            <div class="form-group">
+              <label for="size">Size *</label>
+              <select id="size" required>
+                <option value="">Select Size</option>
+                <option value="S">Small (S)</option>
+                <option value="M">Medium (M)</option>
+                <option value="L">Large (L)</option>
+                <option value="XL">Extra Large (XL)</option>
+                <option value="XXL">2X Large (XXL)</option>
+              </select>
+            </div>
+          
+            <div class="form-group">
+              <label for="color">Color *</label>
+              <input type="text" id="color" required placeholder="e.g., Black, White, Red, Blue" list="color-suggestions" />
+              <datalist id="color-suggestions">
+                <option value="Black">
+                <option value="White">
+                <option value="Red">
+                <option value="Blue">
+                <option value="Green">
+                <option value="Yellow">
+                <option value="Pink">
+                <option value="Purple">
+                <option value="Orange">
+                <option value="Brown">
+                <option value="Grey">
+                <option value="Navy">
+                <option value="Beige">
+                <option value="Khaki">
+              </datalist>
+            </div>
+          
+            <div class="form-group">
             <label for="hero_media">Product Image</label>
             <input type="file" id="hero_media" accept="image/*" />
-          </div>
+              </div>
           
           <div class="form-group" style="display:flex;gap:1rem;align-items:center;">
             <label style="margin:0;">
@@ -72,8 +105,8 @@
             <label style="margin:0;">
               <input type="checkbox" id="is_featured" />
               Featured
-            </label>
-          </div>
+              </label>
+            </div>
           
           <div style="margin-top: 2rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
@@ -86,7 +119,7 @@
           
           <button class="btn" type="submit" style="margin-top:2rem;">Create Product</button>
           <p id="form-error" style="color:var(--danger);margin-top:1rem;min-height:1.5rem;"></p>
-        </form>
+          </form>
       </section>
     </main>
     <script type="module" src="../assets/js/admin-product-add.js"></script>

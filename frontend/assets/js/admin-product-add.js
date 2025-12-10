@@ -32,7 +32,7 @@ const loadCategories = async () => {
   }
 };
 
-const addVariant = () => {
+const addVariant = (variant = {}) => {
   variantCount++;
   const container = document.getElementById('variants-container');
   if (!container) return;
@@ -44,20 +44,43 @@ const addVariant = () => {
         <button type="button" class="btn small ghost" onclick="removeVariant(${variantCount})">Remove</button>
       </div>
       <div class="form-group">
-        <label>Size</label>
-        <input type="text" name="variant_size_${variantCount}" placeholder="e.g., S, M, L, XL" required />
+        <label>Size *</label>
+        <select name="variant_size_${variantCount}" required>
+          <option value="">Select Size</option>
+          <option value="S" ${variant.size === 'S' ? 'selected' : ''}>Small (S)</option>
+          <option value="M" ${variant.size === 'M' ? 'selected' : ''}>Medium (M)</option>
+          <option value="L" ${variant.size === 'L' ? 'selected' : ''}>Large (L)</option>
+          <option value="XL" ${variant.size === 'XL' ? 'selected' : ''}>Extra Large (XL)</option>
+          <option value="XXL" ${variant.size === 'XXL' ? 'selected' : ''}>2X Large (XXL)</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>Color</label>
-        <input type="text" name="variant_color_${variantCount}" placeholder="e.g., Black, White" required />
+        <label>Color *</label>
+        <input type="text" name="variant_color_${variantCount}" placeholder="e.g., Black, White, Red" value="${variant.color || ''}" required list="variant-color-suggestions-${variantCount}" />
+        <datalist id="variant-color-suggestions-${variantCount}">
+          <option value="Black">
+          <option value="White">
+          <option value="Red">
+          <option value="Blue">
+          <option value="Green">
+          <option value="Yellow">
+          <option value="Pink">
+          <option value="Purple">
+          <option value="Orange">
+          <option value="Brown">
+          <option value="Grey">
+          <option value="Navy">
+          <option value="Beige">
+          <option value="Khaki">
+        </datalist>
       </div>
       <div class="form-group">
-        <label>Stock</label>
-        <input type="number" name="variant_stock_${variantCount}" min="0" value="0" required />
+        <label>Stock *</label>
+        <input type="number" name="variant_stock_${variantCount}" min="0" value="${variant.stock || 0}" required />
       </div>
       <div class="form-group">
         <label>Price Override (optional)</label>
-        <input type="number" name="variant_price_${variantCount}" step="0.01" min="0" placeholder="Leave empty to use base price" />
+        <input type="number" name="variant_price_${variantCount}" step="0.01" min="0" placeholder="Leave empty to use base price" value="${variant.price || ''}" />
       </div>
     </div>
   `;
@@ -93,19 +116,43 @@ const handleSubmit = async (event) => {
       hero_media: document.getElementById('hero_media').files[0] || null,
     };
     
+    // Get default size and color from main form
+    const defaultSize = document.getElementById('size').value.trim();
+    const defaultColor = document.getElementById('color').value.trim();
+    
     // Collect variants
     const variantElements = document.querySelectorAll('[data-variant-id]');
     const variantsData = [];
-    variantElements.forEach(variantEl => {
-      const id = variantEl.dataset.variantId;
-      variantsData.push({
-        size: variantEl.querySelector(`[name="variant_size_${id}"]`).value.trim(),
-        color: variantEl.querySelector(`[name="variant_color_${id}"]`).value.trim(),
-        stock: parseInt(variantEl.querySelector(`[name="variant_stock_${id}"]`).value) || 0,
-        price: variantEl.querySelector(`[name="variant_price_${id}"]`).value ? 
-          parseFloat(variantEl.querySelector(`[name="variant_price_${id}"]`).value) : null,
+    
+    // If no variants added, create one from main form size/color
+    if (variantElements.length === 0) {
+      if (defaultSize && defaultColor) {
+        variantsData.push({
+          size: defaultSize,
+          color: defaultColor,
+          stock: 0, // Default stock, user can edit in variants section
+          price: null, // Use base price
+        });
+      }
+    } else {
+      // Use variants from the variants section
+      variantElements.forEach(variantEl => {
+        const id = variantEl.dataset.variantId;
+        const sizeInput = variantEl.querySelector(`[name="variant_size_${id}"]`);
+        const colorInput = variantEl.querySelector(`[name="variant_color_${id}"]`);
+        const stockInput = variantEl.querySelector(`[name="variant_stock_${id}"]`);
+        const priceInput = variantEl.querySelector(`[name="variant_price_${id}"]`);
+        
+        if (sizeInput && colorInput) {
+          variantsData.push({
+            size: sizeInput.value.trim(),
+            color: colorInput.value.trim(),
+            stock: parseInt(stockInput.value) || 0,
+            price: priceInput.value ? parseFloat(priceInput.value) : null,
+          });
+        }
       });
-    });
+    }
     
     formData.variants = variantsData;
     
@@ -150,7 +197,30 @@ const handleSubmit = async (event) => {
       
       const addVariantBtn = document.getElementById('add-variant-btn');
       if (addVariantBtn) {
-        addVariantBtn.addEventListener('click', addVariant);
+        addVariantBtn.addEventListener('click', () => addVariant());
+      }
+      
+      // Pre-fill first variant with main form size/color when user adds variant
+      const sizeInput = document.getElementById('size');
+      const colorInput = document.getElementById('color');
+      if (sizeInput && colorInput) {
+        addVariantBtn?.addEventListener('click', () => {
+          // Wait a bit for the variant to be added to DOM
+          setTimeout(() => {
+            const lastVariant = document.querySelector('[data-variant-id]:last-child');
+            if (lastVariant && sizeInput.value && colorInput.value) {
+              const variantId = lastVariant.dataset.variantId;
+              const variantSizeInput = lastVariant.querySelector(`[name="variant_size_${variantId}"]`);
+              const variantColorInput = lastVariant.querySelector(`[name="variant_color_${variantId}"]`);
+              if (variantSizeInput && !variantSizeInput.value) {
+                variantSizeInput.value = sizeInput.value;
+              }
+              if (variantColorInput && !variantColorInput.value) {
+                variantColorInput.value = colorInput.value;
+              }
+            }
+          }, 100);
+        });
       }
     });
   }
