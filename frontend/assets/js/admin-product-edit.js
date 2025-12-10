@@ -55,37 +55,30 @@ const loadProduct = async () => {
     document.getElementById('is_active').checked = product.is_active !== false;
     document.getElementById('is_featured').checked = product.is_featured || false;
     
+    // Load default size/color from first variant if available
+    if (product.variants && product.variants.length > 0) {
+      const firstVariant = product.variants[0];
+      const sizeInput = document.getElementById('size');
+      const colorInput = document.getElementById('color');
+      if (sizeInput && firstVariant.size) {
+        sizeInput.value = firstVariant.size;
+      }
+      if (colorInput && firstVariant.color) {
+        colorInput.value = firstVariant.color;
+      }
+    }
+    
     // Load variants
     const container = document.getElementById('variants-container');
     if (container && product.variants && product.variants.length > 0) {
       container.innerHTML = '';
-      product.variants.forEach((variant, index) => {
-        variantCount++;
-        const variantHtml = `
-          <div class="form-card" data-variant-id="${variantCount}" style="margin-top:1rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-              <p class="badge">Variant ${variantCount}</p>
-              <button type="button" class="btn small ghost" onclick="removeVariant(${variantCount})">Remove</button>
-            </div>
-            <div class="form-group">
-              <label>Size</label>
-              <input type="text" name="variant_size_${variantCount}" value="${variant.size || ''}" required />
-            </div>
-            <div class="form-group">
-              <label>Color</label>
-              <input type="text" name="variant_color_${variantCount}" value="${variant.color || ''}" required />
-            </div>
-            <div class="form-group">
-              <label>Stock</label>
-              <input type="number" name="variant_stock_${variantCount}" min="0" value="${variant.stock || 0}" required />
-            </div>
-            <div class="form-group">
-              <label>Price Override (optional)</label>
-              <input type="number" name="variant_price_${variantCount}" step="0.01" min="0" value="${variant.price || ''}" placeholder="Leave empty to use base price" />
-            </div>
-          </div>
-        `;
-        container.insertAdjacentHTML('beforeend', variantHtml);
+      product.variants.forEach((variant) => {
+        addVariant({
+          size: variant.size,
+          color: variant.color,
+          stock: variant.stock || 0,
+          price: variant.price_override || null,
+        });
       });
     }
     
