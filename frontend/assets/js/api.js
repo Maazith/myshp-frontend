@@ -60,7 +60,7 @@ export const api = {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(USER_KEY);
-    // No redirect - user login system removed
+    // Note: Redirect handled by calling code (navbar logout button)
   },
   async request(path, { method = 'GET', body, isForm = false, cacheBust = false } = {}) {
     const options = { method };
