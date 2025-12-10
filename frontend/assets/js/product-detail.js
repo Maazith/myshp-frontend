@@ -267,20 +267,52 @@ document.getElementById('add-to-cart')?.addEventListener('click', async () => {
     holder.error.textContent = 'Choose a valid variant.';
     return;
   }
+  
+  const addBtn = document.getElementById('add-to-cart');
+  const originalText = addBtn?.textContent;
+  
   try {
-    await api.request('/cart/add', {
+    if (addBtn) {
+      addBtn.disabled = true;
+      addBtn.textContent = 'Adding...';
+    }
+    
+    console.log('[Product Detail] Adding to cart:', {
+      variantId: variant.id,
+      quantity: Number(quantityInput.value) || 1,
+      variant: variant
+    });
+    
+    const response = await api.request('/cart/add', {
       method: 'POST',
       body: {
         variant_id: variant.id,
         quantity: Number(quantityInput.value) || 1,
       },
     });
+    
+    console.log('[Product Detail] Add to cart response:', response);
+    
     holder.error.style.color = 'var(--success)';
     holder.error.textContent = 'Added to cart!';
-    setTimeout(() => (window.location.href = 'cart.html'), 600);
+    
+    // Wait a bit before redirecting to ensure cart is saved
+    setTimeout(() => {
+      window.location.href = 'cart.html';
+    }, 800);
   } catch (err) {
+    console.error('[Product Detail] Add to cart error:', {
+      error: err,
+      message: err.message,
+      stack: err.stack
+    });
     holder.error.style.color = 'var(--danger)';
-    holder.error.textContent = err.message;
+    holder.error.textContent = err.message || 'Failed to add to cart. Please try again.';
+    
+    if (addBtn) {
+      addBtn.disabled = false;
+      addBtn.textContent = originalText;
+    }
   }
 });
 

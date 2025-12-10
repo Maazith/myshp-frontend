@@ -107,12 +107,23 @@ const renderItems = (cart) => {
 
 const loadCart = async () => {
   try {
-    const cart = await api.request('/cart/');
+    console.log('[Cart] Loading cart...', { apiBaseUrl: api.baseUrl });
+    const cart = await api.request('/cart/', { cacheBust: true });
+    console.log('[Cart] Cart loaded:', { 
+      itemsCount: cart.items?.length || 0, 
+      total: cart.total_amount,
+      cart: cart 
+    });
     renderItems(cart);
   } catch (err) {
-    console.error('Cart load error:', err);
+    console.error('[Cart] Cart load error:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      apiBaseUrl: api.baseUrl
+    });
     // User-friendly error message
-    itemsContainer.innerHTML = '<p style="color:#E6E6E6;text-align:center;padding:2rem;">Unable to load cart. Please refresh the page.</p>';
+    itemsContainer.innerHTML = '<p style="color:var(--danger);text-align:center;padding:2rem;">Unable to load cart. Please refresh the page.</p>';
   }
 };
 
