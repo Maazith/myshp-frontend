@@ -209,11 +209,20 @@ export const mountFooter = async () => {
     </footer>
   `;
   
-  // Hidden admin trigger - click on copyright text
+  // Hidden admin trigger - double-click on copyright text
+  let clickCount = 0;
+  let clickTimer;
   const trigger = document.getElementById('admin-trigger');
   if (trigger) {
     trigger.addEventListener('click', () => {
-      window.location.href = '/admin/login.html';
+      clickCount++;
+      clearTimeout(clickTimer);
+      clickTimer = setTimeout(() => {
+        if (clickCount === 2) {
+          window.location.href = '/admin/login.html';
+        }
+        clickCount = 0;
+      }, 300);
     });
   }
 };

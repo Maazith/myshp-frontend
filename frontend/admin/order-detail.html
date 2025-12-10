@@ -5,27 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Order Detail | Admin | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/admin-mobile.css" />
+    <script>
+      const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
+      const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
+      if (!window.API_BASE_URL) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          window.API_BASE_URL = LOCAL_API_URL;
+        } else {
+          window.API_BASE_URL = PRODUCTION_API_URL;
+        }
+      }
+      window.BACKEND_BASE_URL = window.API_BASE_URL.replace('/api', '');
+    </script>
   </head>
   <body>
     <header data-component="admin-navbar"></header>
     <main>
       <section class="section">
         <div class="section-header">
-          <h1 class="section-title">Order Details</h1>
-          <a href="orders.html" class="btn ghost">Back to Orders</a>
+          <h2 class="section-title">Order Detail</h2>
+          <a href="/admin/orders.html" class="btn ghost">Back to Orders</a>
         </div>
-        <div id="order-detail-content"></div>
+        
+        <div class="two-column">
+          <div id="order-info"></div>
+          <div id="status-tracker"></div>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+          <h3 style="margin-bottom: 1rem;color:#FFFFFF;">Order Items</h3>
+          <div id="order-items"></div>
+        </div>
+        
+        <div class="two-column" style="margin-top: 2rem;">
+          <div id="shipping-address"></div>
+          <div id="payment-proof"></div>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+          <div id="status-buttons"></div>
+        </div>
       </section>
     </main>
-    <script type="module">
-      import { mountAdminNavbar } from '../assets/js/admin-navbar.js';
-      mountAdminNavbar();
-    </script>
     <script type="module" src="../assets/js/admin-order-detail.js"></script>
   </body>
 </html>
-
-
-
-
-

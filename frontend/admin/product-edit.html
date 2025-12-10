@@ -5,66 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Edit Product | Admin | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/admin-mobile.css" />
+    <script>
+      const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
+      const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
+      if (!window.API_BASE_URL) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          window.API_BASE_URL = LOCAL_API_URL;
+        } else {
+          window.API_BASE_URL = PRODUCTION_API_URL;
+        }
+      }
+      window.BACKEND_BASE_URL = window.API_BASE_URL.replace('/api', '');
+    </script>
   </head>
   <body>
     <header data-component="admin-navbar"></header>
     <main>
       <section class="section">
         <div class="section-header">
-          <h1 class="section-title">Edit Product</h1>
-          <a href="products.html" class="btn ghost">Back to Products</a>
+          <h2 class="section-title">Edit Product</h2>
+          <a href="/admin/products.html" class="btn ghost">Back to Products</a>
         </div>
-        <div class="form-card glass-card">
-          <form id="product-form">
-            <div class="form-group">
-              <label for="title">Title</label>
-              <input type="text" id="title" required>
+        
+        <form id="product-form" class="form-card" style="max-width:800px;margin:0 auto;">
+          <p class="badge">Product Information</p>
+          
+          <div class="form-group">
+            <label for="title">Title *</label>
+            <input type="text" id="title" required placeholder="Product title" />
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" rows="4" placeholder="Product description"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category">
+              <option value="">Select Category</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="gender">Gender *</label>
+            <select id="gender" required>
+              <option value="">Select Gender</option>
+              <option value="MEN">Men</option>
+              <option value="WOMEN">Women</option>
+              <option value="UNISEX">Unisex</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="base_price">Base Price *</label>
+            <input type="number" id="base_price" step="0.01" min="0" required placeholder="0.00" />
+          </div>
+          
+          <div class="form-group">
+            <label for="hero_media">Product Image (leave empty to keep current)</label>
+            <input type="file" id="hero_media" accept="image/*" />
+          </div>
+          
+          <div class="form-group" style="display:flex;gap:1rem;align-items:center;">
+            <label style="margin:0;">
+              <input type="checkbox" id="is_active" checked />
+              Active
+            </label>
+            <label style="margin:0;">
+              <input type="checkbox" id="is_featured" />
+              Featured
+            </label>
+          </div>
+          
+          <div style="margin-top: 2rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+              <p class="badge">Product Variants</p>
+              <button type="button" id="add-variant-btn" class="btn small">Add Variant</button>
             </div>
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea id="description" rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-              <label for="gender">Gender</label>
-              <select id="gender" required>
-                <option value="M">Men</option>
-                <option value="F">Women</option>
-                <option value="U">Unisex</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="base-price">Base Price</label>
-              <input type="number" id="base-price" step="0.01" min="0" required>
-            </div>
-            <div class="form-group">
-              <label for="hero-media">Hero Image (leave empty to keep current)</label>
-              <input type="file" id="hero-media" accept="image/*">
-              <div id="current-hero-preview" style="margin-top: 1rem; display: none;">
-                <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Current Image:</p>
-                <img id="current-hero-img" src="" alt="Current Hero" style="max-width: 300px; max-height: 300px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1);">
-              </div>
-              <div id="new-hero-image-preview" style="margin-top: 1rem; display: none;">
-                <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">New Image Preview:</p>
-                <img id="new-hero-preview-img" src="" alt="Preview" style="max-width: 300px; max-height: 300px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1);">
-                <button type="button" class="btn ghost small" id="remove-new-hero-preview" style="margin-top: 0.5rem;">Remove New Image</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="is-active"> Active
-              </label>
-            </div>
-            <button type="submit" class="btn">Update Product</button>
-            <p id="form-error" style="color: var(--danger); margin-top: 1rem;"></p>
-          </form>
-        </div>
+            <div id="variants-container"></div>
+            <p style="color:var(--text-light);font-size:0.85rem;margin-top:0.5rem;">Add variants for different sizes, colors, and stock levels.</p>
+          </div>
+          
+          <button class="btn" type="submit" style="margin-top:2rem;">Update Product</button>
+          <p id="form-error" style="color:var(--danger);margin-top:1rem;min-height:1.5rem;"></p>
+        </form>
       </section>
     </main>
-    <script type="module">
-      import { mountAdminNavbar } from '../assets/js/admin-navbar.js';
-      mountAdminNavbar();
-    </script>
     <script type="module" src="../assets/js/admin-product-edit.js"></script>
   </body>
 </html>
-

@@ -1,68 +1,139 @@
-import { adminAuth } from './admin-auth.js';
 import { adminApi } from './admin-api.js';
+import { adminAuth } from './admin-auth.js';
+import { mountAdminNavbar } from './admin-navbar.js';
 
-if (!adminAuth.requireAuth()) return;
+if (!adminAuth.requireAuth()) {
+  // Redirect handled
+}
 
+mountAdminNavbar();
 
-// Hero image preview
-const heroMediaInput = document.getElementById('hero-media');
-const heroPreviewDiv = document.getElementById('hero-image-preview');
-const heroPreviewImg = document.getElementById('hero-preview-img');
-const removeHeroPreviewBtn = document.getElementById('remove-hero-preview');
+let variantCount = 0;
+const variants = [];
 
-heroMediaInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      heroPreviewImg.src = event.target.result;
-      heroPreviewDiv.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  } else {
-    heroPreviewDiv.style.display = 'none';
+const loadCategories = async () => {
+  try {
+    const categories = await adminApi.request('/categories/');
+    const select = document.getElementById('category');
+    if (select && categories.length > 0) {
+      select.innerHTML = '<option value="">Select Category</option>' + 
+        categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+    }
+  } catch (err) {
+    console.error('Error loading categories:', err);
   }
-});
+};
 
-removeHeroPreviewBtn.addEventListener('click', () => {
-  heroMediaInput.value = '';
-  heroPreviewDiv.style.display = 'none';
-  heroPreviewImg.src = '';
-});
+const addVariant = () => {
+  variantCount++;
+  const container = document.getElementById('variants-container');
+  if (!container) return;
+  
+  const variantHtml = `
+    <div class="form-card" data-variant-id="${variantCount}" style="margin-top:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <p class="badge">Variant ${variantCount}</p>
+        <button type="button" class="btn small ghost" onclick="removeVariant(${variantCount})">Remove</button>
+      </div>
+      <div class="form-group">
+        <label>Size</label>
+        <input type="text" name="variant_size_${variantCount}" placeholder="e.g., S, M, L, XL" required />
+      </div>
+      <div class="form-group">
+        <label>Color</label>
+        <input type="text" name="variant_color_${variantCount}" placeholder="e.g., Black, White" required />
+      </div>
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" name="variant_stock_${variantCount}" min="0" value="0" required />
+      </div>
+      <div class="form-group">
+        <label>Price Override (optional)</label>
+        <input type="number" name="variant_price_${variantCount}" step="0.01" min="0" placeholder="Leave empty to use base price" />
+      </div>
+    </div>
+  `;
+  
+  container.insertAdjacentHTML('beforeend', variantHtml);
+};
 
-document.getElementById('product-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+window.removeVariant = (id) => {
+  const variant = document.querySelector(`[data-variant-id="${id}"]`);
+  if (variant) {
+    variant.remove();
+  }
+};
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  const form = event.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
   const errorEl = document.getElementById('form-error');
-  errorEl.textContent = '';
+  
+  if (errorEl) errorEl.textContent = '';
   
   try {
-    const formData = new FormData();
-    formData.append('title', document.getElementById('title').value);
-    formData.append('description', document.getElementById('description').value);
-    formData.append('gender', document.getElementById('gender').value);
-    formData.append('base_price', document.getElementById('base-price').value);
-    formData.append('is_active', document.getElementById('is-active').checked);
+    // Collect form data
+    const formData = {
+      title: document.getElementById('title').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      category_id: document.getElementById('category').value || null,
+      gender: document.getElementById('gender').value,
+      base_price: parseFloat(document.getElementById('base_price').value) || 0,
+      is_active: document.getElementById('is_active').checked,
+      is_featured: document.getElementById('is_featured').checked,
+      hero_media: document.getElementById('hero_media').files[0] || null,
+    };
     
-    const heroFile = document.getElementById('hero-media').files[0];
-    if (heroFile) {
-      formData.append('hero_media', heroFile);
+    // Collect variants
+    const variantElements = document.querySelectorAll('[data-variant-id]');
+    const variantsData = [];
+    variantElements.forEach(variantEl => {
+      const id = variantEl.dataset.variantId;
+      variantsData.push({
+        size: variantEl.querySelector(`[name="variant_size_${id}"]`).value.trim(),
+        color: variantEl.querySelector(`[name="variant_color_${id}"]`).value.trim(),
+        stock: parseInt(variantEl.querySelector(`[name="variant_stock_${id}"]`).value) || 0,
+        price: variantEl.querySelector(`[name="variant_price_${id}"]`).value ? 
+          parseFloat(variantEl.querySelector(`[name="variant_price_${id}"]`).value) : null,
+      });
+    });
+    
+    formData.variants = variantsData;
+    
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating...';
     }
     
     await adminApi.createProduct(formData);
     
-    // Show success message
-    errorEl.style.color = 'var(--success, #4CAF50)';
-    errorEl.textContent = '✅ Product created successfully! Redirecting...';
+    alert('Product created successfully!');
+    window.location.href = '/admin/products.html';
     
-    // Redirect with success parameter
-    setTimeout(() => {
-      window.location.href = 'products.html?created=true';
-    }, 1500);
-  } catch (error) {
-    errorEl.style.color = 'var(--danger)';
-    errorEl.textContent = error.message;
+  } catch (err) {
+    if (errorEl) {
+      errorEl.textContent = err.message || 'Error creating product. Please try again.';
+    }
+    console.error('Error creating product:', err);
+    
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create Product';
+    }
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadCategories();
+  
+  const form = document.getElementById('product-form');
+  if (form) {
+    form.addEventListener('submit', handleSubmit);
+  }
+  
+  const addVariantBtn = document.getElementById('add-variant-btn');
+  if (addVariantBtn) {
+    addVariantBtn.addEventListener('click', addVariant);
   }
 });
-
-// Initialize on page load
-

@@ -1,5 +1,42 @@
-import { api } from './api.js';
+import { adminApi } from './admin-api.js';
 
+// Admin authentication module
+export const adminAuth = {
+  requireAuth() {
+    const token = adminApi.accessToken;
+    if (!token) {
+      window.location.href = '/admin/login.html';
+      return false;
+    }
+    return true;
+  },
+  
+  clearAuth() {
+    adminApi.logout();
+  },
+  
+  async checkAuth() {
+    if (!adminApi.isAuthenticated) {
+      return false;
+    }
+    
+    // Verify token is still valid by making a test request
+    try {
+      const user = adminApi.currentUser();
+      if (user && user.is_staff) {
+        return true;
+      }
+      // Token exists but user is not staff, clear auth
+      this.clearAuth();
+      return false;
+    } catch {
+      this.clearAuth();
+      return false;
+    }
+  }
+};
+
+// Handle admin login form
 const handleAdminLogin = () => {
   const form = document.getElementById('admin-login-form');
   if (!form) return;
@@ -9,7 +46,7 @@ const handleAdminLogin = () => {
     const errorEl = document.getElementById('admin-login-error');
     const submitBtn = form.querySelector('button[type="submit"]');
     
-    if (errorEl) errorEl.textContent = ''; // Clear previous errors
+    if (errorEl) errorEl.textContent = '';
     
     try {
       const username = document.getElementById('admin-user').value.trim();
@@ -18,47 +55,34 @@ const handleAdminLogin = () => {
       if (!username || !password) {
         if (errorEl) {
           errorEl.textContent = 'Please enter both username and password.';
-          errorEl.style.display = 'block';
         }
         return;
       }
       
-      // Disable submit button
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Logging in...';
       }
       
       // Call login API
-      const payload = await api.login({ username, password });
+      const payload = await adminApi.login({ username, password });
       
-      console.log('Login response:', payload);
-      
-      // Check if tokens were received
-      if (!payload || (!payload.access && !payload.refresh)) {
-        throw new Error('Login failed: No authentication tokens received.');
-      }
-      
-      // If user data is not in the response, fetch it from /auth/me
+      // Check if user data is in response
       let userData = payload.user;
       if (!userData) {
-        console.log('User data not in login response, fetching from /auth/me');
+        // Fetch user data
         try {
-          userData = await api.request('/auth/me');
-          console.log('User data from /auth/me:', userData);
+          userData = await adminApi.request('/auth/me');
         } catch (meError) {
-          console.error('Failed to fetch user data:', meError);
-          throw new Error('Login successful but could not verify user account. Please try again.');
+          throw new Error('Login successful but could not verify user account.');
         }
       }
       
-      // Check if user has admin privileges
+      // Verify admin privileges
       if (!userData || !userData.is_staff) {
-        api.logout(); // Clear invalid token
+        adminApi.logout();
         if (errorEl) {
-          errorEl.textContent = 'Access denied. This account does not have admin privileges. Please contact an administrator.';
-          errorEl.style.display = 'block';
-          errorEl.style.color = 'var(--danger)';
+          errorEl.textContent = 'Access denied. This account does not have admin privileges.';
         }
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -67,61 +91,33 @@ const handleAdminLogin = () => {
         return;
       }
       
-      // Store user data if not already stored
-      if (userData && !payload.user) {
-        localStorage.setItem('edithcloths_user', JSON.stringify(userData));
+      // Store user data (already stored by adminApi.login, but ensure it's there)
+      if (userData) {
+        localStorage.setItem('admin_user', JSON.stringify(userData));
       }
       
       // Success - redirect to dashboard
-      window.location.href = 'dashboard.html';
+      window.location.href = '/admin/dashboard.html';
     } catch (err) {
       if (errorEl) {
-        let errorMsg = err.message || 'Login failed. Please check your credentials and try again.';
+        let errorMsg = err.message || 'Login failed. Please check your credentials.';
         
-        // More specific error messages
         if (errorMsg.includes('Failed to connect') || errorMsg.includes('fetch')) {
-          errorMsg = 'Cannot connect to server. Please check your internet connection and ensure the backend is running.';
-        } else if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('No active account') || errorMsg.includes('Invalid')) {
+          errorMsg = 'Cannot connect to server. Please check your internet connection.';
+        } else if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('Invalid')) {
           errorMsg = 'Invalid username or password. Please check your credentials.';
-        } else if (errorMsg.includes('404')) {
-          errorMsg = 'API endpoint not found. Check if backend is running.';
-        } else if (errorMsg.includes('500')) {
-          errorMsg = 'Server error. Check backend console for details.';
         }
         
         errorEl.textContent = errorMsg;
-        errorEl.style.display = 'block';
-        errorEl.style.color = 'var(--danger)';
       }
       console.error('Admin login error:', err);
       
-      // Re-enable submit button
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Login';
       }
     }
   });
-};
-
-// Export adminAuth object for use in other modules
-export const adminAuth = {
-  requireAuth() {
-    // Check if user is authenticated
-    const token = localStorage.getItem('edithcloths_token');
-    if (!token) {
-      window.location.href = 'login.html';
-      return false;
-    }
-    return true;
-  },
-  
-  clearAuth() {
-    // Clear all auth data
-    localStorage.removeItem('edithcloths_token');
-    localStorage.removeItem('edithcloths_refresh');
-    localStorage.removeItem('edithcloths_user');
-  }
 };
 
 // Initialize on page load

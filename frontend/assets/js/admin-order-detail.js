@@ -1,165 +1,199 @@
-import { adminAuth } from './admin-auth.js';
 import { adminApi } from './admin-api.js';
-import { formatCurrency, orderStages, getAbsoluteImageUrl } from './components.js';
+import { adminAuth } from './admin-auth.js';
+import { mountAdminNavbar } from './admin-navbar.js';
+import { formatCurrency, orderStages } from './components.js';
 
-if (!adminAuth.requireAuth()) return;
-
-const urlParams = new URLSearchParams(window.location.search);
-const orderId = urlParams.get('id');
-
-if (!orderId) {
-  window.location.href = 'orders.html';
+if (!adminAuth.requireAuth()) {
+  // Redirect handled
 }
 
-async function loadOrderDetail() {
+mountAdminNavbar();
+
+const getOrderId = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id');
+};
+
+const renderOrderTracker = (status) => {
+  const activeIndex = orderStages.findIndex((stage) => stage.key === status);
+  return `
+    <div class="order-tracker">
+      ${orderStages
+        .map(
+          (stage, idx) => `
+          <div class="tracker-node ${idx <= activeIndex ? 'active' : ''}">
+            <span>${stage.label}</span>
+          </div>
+        `,
+        )
+        .join('')}
+    </div>
+  `;
+};
+
+const loadOrderDetail = async () => {
+  const orderId = getOrderId();
+  if (!orderId) {
+    window.location.href = '/admin/orders.html';
+    return;
+  }
+  
   try {
     const order = await adminApi.getOrder(orderId);
-    if (!order) return;
     
-    const statusOptions = orderStages.map(stage => 
-      `<option value="${stage.key}" ${order.status === stage.key ? 'selected' : ''}>${stage.label}</option>`
-    ).join('');
-    
-    const itemsHtml = order.items?.map(item => {
-      const imageUrl = item.product_image_url ? getAbsoluteImageUrl(item.product_image_url) : '';
-      const imageHtml = imageUrl 
-        ? `<img src="${imageUrl}" alt="${item.product_title}" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1); margin-right: 1rem;" onerror="this.style.display='none'">`
-        : '<div style="width: 80px; height: 80px; background: rgba(255,255,255,0.05); border-radius: var(--radius); margin-right: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 0.8rem;">No Image</div>';
-      
-      return `
-        <div style="padding: 1rem; border-bottom: 1px solid rgba(230,230,230,0.1); display: flex; align-items: center;">
-          ${imageHtml}
-          <div style="flex: 1;">
-            <p style="font-weight: 600; margin-bottom: 0.25rem;">${item.product_title}</p>
-            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.25rem;">Size: ${item.size || 'N/A'} | Color: ${item.color || 'N/A'}</p>
-            <p style="color: var(--text-light); font-size: 0.9rem;">Qty: ${item.quantity}</p>
-          </div>
-          <div style="text-align: right;">
-            <p style="font-weight: 600;">${formatCurrency(item.price)}</p>
-            <p style="color: var(--text-light); font-size: 0.9rem;">Total: ${formatCurrency(item.price * item.quantity)}</p>
+    // Render order info
+    const orderInfo = document.getElementById('order-info');
+    if (orderInfo) {
+      orderInfo.innerHTML = `
+        <div class="form-card">
+          <p class="badge">Order Details</p>
+          <h2>Order #${order.order_number}</h2>
+          <div style="margin-top: 1.5rem;">
+            <p><strong>Status:</strong> <span class="badge">${order.status_display || order.status}</span></p>
+            <p><strong>Total:</strong> ${formatCurrency(order.total_amount)}</p>
+            <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+            ${order.user ? `<p><strong>User:</strong> ${order.user.username} (${order.user.email})</p>` : ''}
           </div>
         </div>
       `;
-    }).join('') || '<p>No items</p>';
-    
-    const html = `
-      <div class="glass-card" style="margin-bottom: 1.5rem;">
-        <h2 style="margin-bottom: 1rem;">Order Information</h2>
-        <div class="form-group">
-          <label>Order Number</label>
-          <input type="text" value="${order.order_number}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>Order Date</label>
-          <input type="text" value="${new Date(order.created_at).toLocaleString()}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>Status</label>
-          <select id="order-status">
-            ${statusOptions}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Total Amount</label>
-          <input type="text" value="${formatCurrency(order.total_amount)}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>Payment Verified</label>
-          <input type="text" value="${order.payment_verified ? 'Yes' : 'No'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        ${order.upi_reference ? `
-        <div class="form-group">
-          <label>UPI Reference</label>
-          <input type="text" value="${order.upi_reference}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        ` : ''}
-        <button class="btn" id="update-status">Update Status</button>
-        <p id="status-error" style="color: var(--danger); margin-top: 1rem;"></p>
-      </div>
-      <div class="glass-card" style="margin-bottom: 1.5rem;">
-        <h2 style="margin-bottom: 1rem;">Customer Information</h2>
-        <div class="form-group">
-          <label>Customer Name</label>
-          <input type="text" value="${order.name || order.user?.username || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="text" value="${order.email || order.user?.email || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>Phone Number</label>
-          <input type="text" value="${order.phone_number || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>Account Username</label>
-          <input type="text" value="${order.user?.username || 'Guest User'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-      </div>
-      <div class="glass-card" style="margin-bottom: 1.5rem;">
-        <h2 style="margin-bottom: 1rem;">Shipping Address</h2>
-        <div class="form-group">
-          <label>Full Address</label>
-          <textarea readonly style="background: rgba(255,255,255,0.02); min-height: 60px;">${order.address || 'N/A'}</textarea>
-        </div>
-        <div class="form-group">
-          <label>Street Name</label>
-          <input type="text" value="${order.street_name || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>City/Town</label>
-          <input type="text" value="${order.city_town || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>District</label>
-          <input type="text" value="${order.district || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        <div class="form-group">
-          <label>PIN Code</label>
-          <input type="text" value="${order.pin_code || 'N/A'}" readonly style="background: rgba(255,255,255,0.02);">
-        </div>
-        ${order.shipping_address ? `
-        <div class="form-group">
-          <label>Complete Address (Legacy)</label>
-          <textarea readonly style="background: rgba(255,255,255,0.02); min-height: 60px;">${order.shipping_address}</textarea>
-        </div>
-        ` : ''}
-      </div>
-      <div class="glass-card" style="margin-bottom: 1.5rem;">
-        <h2 style="margin-bottom: 1rem;">Order Items</h2>
-        ${itemsHtml}
-      </div>
-      ${order.payment_proof ? `
-      <div class="glass-card">
-        <h2 style="margin-bottom: 1rem;">Payment Proof</h2>
-        <img src="${order.payment_proof.proof_file_url || order.payment_proof.proof_file || ''}" alt="Payment Proof" style="max-width: 100%; border-radius: var(--radius);" onerror="this.style.display='none'">
-        ${order.payment_proof.reference_id ? `<p style="margin-top: 1rem;"><strong>Reference ID:</strong> ${order.payment_proof.reference_id}</p>` : ''}
-      </div>
-      ` : ''}
-    `;
-    
-    document.getElementById('order-detail-content').innerHTML = html;
-    
-    const updateBtn = document.getElementById('update-status');
-    if (updateBtn) {
-      updateBtn.addEventListener('click', async () => {
-        const newStatus = document.getElementById('order-status').value;
-        const errorEl = document.getElementById('status-error');
-        errorEl.textContent = '';
-        try {
-          await adminApi.updateOrderStatus(orderId, newStatus);
-          errorEl.textContent = 'Status updated successfully!';
-          errorEl.style.color = 'var(--success)';
-          setTimeout(() => loadOrderDetail(), 1000);
-        } catch (error) {
-          errorEl.textContent = error.message;
-        }
-      });
     }
-  } catch (error) {
-    console.error('Order detail error:', error);
-    document.getElementById('order-detail-content').innerHTML = `<p style="color: var(--danger);">Error: ${error.message}</p>`;
+    
+    // Render status tracker
+    const trackerContainer = document.getElementById('status-tracker');
+    if (trackerContainer) {
+      trackerContainer.innerHTML = `
+        <div class="form-card">
+          <p class="badge">Order Status</p>
+          ${renderOrderTracker(order.status)}
+        </div>
+      `;
+    }
+    
+    // Render items
+    const itemsContainer = document.getElementById('order-items');
+    if (itemsContainer) {
+      if (order.items && order.items.length > 0) {
+        itemsContainer.innerHTML = order.items.map(item => `
+          <div class="cart-item">
+            <img src="${item.product_image_url || '../assets/img/placeholder.jpg'}" alt="${item.product_title}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius);" />
+            <div class="cart-item-info">
+              <h3>${item.product_title}</h3>
+              <p>Size: ${item.size || 'N/A'}</p>
+              <p>Color: ${item.color || 'N/A'}</p>
+              <p>Quantity: ${item.quantity}</p>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <strong>${formatCurrency(item.price)}</strong>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        itemsContainer.innerHTML = '<p style="color:var(--text-light);">No items found.</p>';
+      }
+    }
+    
+    // Render shipping address
+    const addressContainer = document.getElementById('shipping-address');
+    if (addressContainer) {
+      addressContainer.innerHTML = `
+        <div class="form-card">
+          <p class="badge">Shipping Address</p>
+          <div style="margin-top: 1rem;">
+            <p><strong>${order.name}</strong></p>
+            <p>${order.email}</p>
+            <p>${order.phone_number}</p>
+            <p style="margin-top: 1rem;">${order.address || order.shipping_address || 'N/A'}</p>
+            <p>${order.street_name || ''}</p>
+            <p>${order.city_town || ''}, ${order.district || ''}</p>
+            <p>PIN: ${order.pin_code || 'N/A'}</p>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Render payment proof if exists
+    if (order.payment_proof) {
+      const paymentContainer = document.getElementById('payment-proof');
+      if (paymentContainer) {
+        paymentContainer.innerHTML = `
+          <div class="form-card">
+            <p class="badge">Payment Proof</p>
+            <div style="margin-top: 1rem;">
+              <p><strong>Reference ID:</strong> ${order.payment_proof.reference_id || 'N/A'}</p>
+              <p><strong>Verified:</strong> ${order.payment_proof.verified ? 'Yes' : 'No'}</p>
+              ${order.payment_proof.proof_file_url ? `
+                <a href="${order.payment_proof.proof_file_url}" target="_blank" class="btn small" style="margin-top: 1rem;">View Proof</a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+    }
+    
+    // Render status update buttons
+    const statusButtons = document.getElementById('status-buttons');
+    if (statusButtons) {
+      const statusFlow = ['PLACED', 'PAYMENT_VERIFIED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+      const currentIndex = statusFlow.indexOf(order.status);
+      
+      statusButtons.innerHTML = `
+        <div class="form-card">
+          <p class="badge">Update Status</p>
+          <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem;">
+            ${currentIndex < statusFlow.length - 1 ? `
+              <button class="btn" onclick="updateStatus('${statusFlow[currentIndex + 1]}')">
+                Mark as ${statusFlow[currentIndex + 1].replace('_', ' ')}
+              </button>
+            ` : ''}
+            ${!order.payment_verified && order.status !== 'DELIVERED' ? `
+              <button class="btn ghost" onclick="markPaid()">Mark as Paid</button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+  } catch (err) {
+    console.error('Error loading order:', err);
+    alert('Error loading order details. Please try again.');
+    window.location.href = '/admin/orders.html';
   }
-}
+};
 
-loadOrderDetail();
+window.updateStatus = async (status) => {
+  const orderId = getOrderId();
+  if (!orderId) return;
+  
+  if (!confirm(`Update order status to ${status.replace('_', ' ')}?`)) {
+    return;
+  }
+  
+  try {
+    await adminApi.updateOrderStatus(orderId, status);
+    alert('Order status updated successfully!');
+    loadOrderDetail();
+  } catch (err) {
+    alert('Error updating order status: ' + (err.message || 'Unknown error'));
+  }
+};
 
+window.markPaid = async () => {
+  const orderId = getOrderId();
+  if (!orderId) return;
+  
+  if (!confirm('Mark this order as paid?')) {
+    return;
+  }
+  
+  try {
+    await adminApi.markOrderPaid(orderId);
+    alert('Order marked as paid!');
+    loadOrderDetail();
+  } catch (err) {
+    alert('Error marking order as paid: ' + (err.message || 'Unknown error'));
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadOrderDetail();
+});

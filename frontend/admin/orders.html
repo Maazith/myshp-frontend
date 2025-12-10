@@ -5,23 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Orders | Admin | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/admin-mobile.css" />
+    <script>
+      const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
+      const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
+      if (!window.API_BASE_URL) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          window.API_BASE_URL = LOCAL_API_URL;
+        } else {
+          window.API_BASE_URL = PRODUCTION_API_URL;
+        }
+      }
+      window.BACKEND_BASE_URL = window.API_BASE_URL.replace('/api', '');
+    </script>
   </head>
   <body>
     <header data-component="admin-navbar"></header>
     <main>
       <section class="section">
         <div class="section-header">
-          <h1 class="section-title">Orders</h1>
+          <h2 class="section-title">Orders</h2>
         </div>
-        <div class="glass-card">
-          <div id="orders-list"></div>
+        
+        <div id="orders-list">
+          <p style="color:var(--text-light);text-align:center;padding:2rem;">Loading...</p>
         </div>
       </section>
     </main>
-    <script type="module">
-      import { mountAdminNavbar } from '../assets/js/admin-navbar.js';
-      mountAdminNavbar();
-    </script>
     <script type="module" src="../assets/js/admin-orders.js"></script>
   </body>
 </html>

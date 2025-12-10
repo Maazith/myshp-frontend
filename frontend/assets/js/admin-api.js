@@ -1,99 +1,282 @@
-import { api } from './api.js';
+// Admin API - Separate from user API
+// Uses admin_access and admin_refresh tokens
+
+const ADMIN_ACCESS_KEY = 'admin_access';
+const ADMIN_REFRESH_KEY = 'admin_refresh';
+const ADMIN_USER_KEY = 'admin_user';
+
+const buildAdminHeaders = (options = {}) => {
+  const headers = { ...options };
+  if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  const token = localStorage.getItem(ADMIN_ACCESS_KEY);
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
+
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.API_BASE_URL) {
+    return window.API_BASE_URL;
+  }
+  if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
+    return window.VERCEL_ENV_API_BASE_URL;
+  }
+  return 'https://myshp-backend.onrender.com/api';
+};
 
 export const adminApi = {
-  // Categories
-  async getCategories() {
-    return await api.request('/categories/');
+  get baseUrl() {
+    return getApiBaseUrl();
   },
-  
-  async createCategory(name, description = '') {
-    return await api.request('/categories/add', {
+  get accessToken() {
+    return localStorage.getItem(ADMIN_ACCESS_KEY);
+  },
+  get isAuthenticated() {
+    return !!this.accessToken;
+  },
+  currentUser() {
+    const user = localStorage.getItem(ADMIN_USER_KEY);
+    return user ? JSON.parse(user) : null;
+  },
+  logout() {
+    localStorage.removeItem(ADMIN_ACCESS_KEY);
+    localStorage.removeItem(ADMIN_REFRESH_KEY);
+    localStorage.removeItem(ADMIN_USER_KEY);
+  },
+  async request(path, { method = 'GET', body, isForm = false, cacheBust = false } = {}) {
+    const options = { method };
+    
+    let requestPath = path;
+    if (method === 'GET' && cacheBust) {
+      const separator = path.includes('?') ? '&' : '?';
+      requestPath = `${path}${separator}_t=${Date.now()}`;
+    }
+    
+    if (isForm || body instanceof FormData) {
+      options.headers = {};
+      const token = localStorage.getItem(ADMIN_ACCESS_KEY);
+      if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+      }
+      options.body = body;
+    } else {
+      options.headers = buildAdminHeaders();
+      if (method === 'GET') {
+        options.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+        options.headers['Pragma'] = 'no-cache';
+        options.headers['Expires'] = '0';
+      }
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+    }
+    
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+      const fullUrl = `${apiBaseUrl}${requestPath}`;
+      
+      const response = await fetch(fullUrl, options);
+      
+      // Handle 401 Unauthorized - token expired or invalid
+      if (response.status === 401) {
+        // Try to refresh token
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          // Retry request with new token
+          options.headers = buildAdminHeaders();
+          if (body && !(body instanceof FormData)) {
+            options.body = JSON.stringify(body);
+          }
+          const retryResponse = await fetch(fullUrl, options);
+          if (!retryResponse.ok) {
+            throw new Error(`API request failed: ${retryResponse.status} ${retryResponse.statusText}`);
+          }
+          return await retryResponse.json();
+        } else {
+          // Refresh failed, redirect to login
+          this.logout();
+          window.location.href = '/admin/login.html';
+          throw new Error('Session expired. Please login again.');
+        }
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { detail: errorText || `HTTP ${response.status}` };
+        }
+        throw new Error(errorData.detail || errorData.message || `API request failed: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+      }
+      return await response.text();
+    } catch (err) {
+      if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+        throw new Error('Failed to connect to server. Please check your internet connection.');
+      }
+      throw err;
+    }
+  },
+  async refreshToken() {
+    const refreshToken = localStorage.getItem(ADMIN_REFRESH_KEY);
+    if (!refreshToken) {
+      return false;
+    }
+    
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+      
+      if (!response.ok) {
+        return false;
+      }
+      
+      const data = await response.json();
+      if (data.access) {
+        localStorage.setItem(ADMIN_ACCESS_KEY, data.access);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  },
+  async login(credentials) {
+    const response = await fetch(`${this.baseUrl}/auth/login`, {
       method: 'POST',
-      body: { name, description },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { detail: errorText || 'Login failed' };
+      }
+      throw new Error(errorData.detail || errorData.message || 'Login failed');
+    }
+    
+    const data = await response.json();
+    
+    // Store admin tokens
+    if (data.access) {
+      localStorage.setItem(ADMIN_ACCESS_KEY, data.access);
+    }
+    if (data.refresh) {
+      localStorage.setItem(ADMIN_REFRESH_KEY, data.refresh);
+    }
+    if (data.user) {
+      localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(data.user));
+    }
+    
+    return data;
+  },
+  // Admin-specific endpoints
+  async getStats() {
+    return this.request('/admin/stats', { cacheBust: true });
+  },
+  async getOrders() {
+    return this.request('/orders/', { cacheBust: true });
+  },
+  async getOrder(id) {
+    return this.request(`/orders/${id}/`, { cacheBust: true });
+  },
+  async updateOrderStatus(id, status) {
+    return this.request(`/orders/${id}/status`, {
+      method: 'PATCH',
+      body: { status },
     });
   },
-
-  // Products
+  async markOrderPaid(id) {
+    return this.request(`/orders/${id}/mark-paid`, {
+      method: 'POST',
+    });
+  },
   async getProducts() {
-    return await api.request('/products/', { cacheBust: true });
+    return this.request('/products/', { cacheBust: true });
   },
-
   async getProduct(id) {
-    return await api.request(`/products/id/${id}/`, { cacheBust: true });
+    return this.request(`/products/id/${id}/`, { cacheBust: true });
   },
-
-  async createProduct(formData) {
-    return await api.request('/products/add', {
+  async createProduct(data) {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (key === 'hero_media' && data[key] instanceof File) {
+        formData.append(key, data[key]);
+      } else if (key === 'variants' && Array.isArray(data[key])) {
+        formData.append(key, JSON.stringify(data[key]));
+      } else if (data[key] !== null && data[key] !== undefined) {
+        formData.append(key, data[key]);
+      }
+    });
+    return this.request('/products/add', {
       method: 'POST',
       body: formData,
       isForm: true,
     });
   },
-
-  async updateProduct(id, formData) {
-    return await api.request(`/products/${id}/edit`, {
+  async updateProduct(id, data) {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (key === 'hero_media' && data[key] instanceof File) {
+        formData.append(key, data[key]);
+      } else if (key === 'variants' && Array.isArray(data[key])) {
+        formData.append(key, JSON.stringify(data[key]));
+      } else if (data[key] !== null && data[key] !== undefined) {
+        formData.append(key, data[key]);
+      }
+    });
+    return this.request(`/products/${id}/edit`, {
       method: 'PUT',
       body: formData,
       isForm: true,
     });
   },
-
   async deleteProduct(id) {
-    return await api.request(`/products/${id}/delete`, {
+    return this.request(`/products/${id}/delete`, {
       method: 'DELETE',
     });
   },
-
-  async bulkDelete(type) {
-    return await api.request('/admin/bulk-delete', {
-      method: 'DELETE',
-      body: { type },
-    });
-  },
-
-  // Orders
-  async getOrders() {
-    return await api.request('/orders/');
-  },
-
-  async getOrder(id) {
-    return await api.request(`/orders/${id}/`);
-  },
-
-  async updateOrderStatus(id, status) {
-    return await api.request(`/orders/${id}/status`, {
-      method: 'POST',
-      body: { status },
-    });
-  },
-
-  async markOrderPaid(id) {
-    return await api.request(`/orders/${id}/mark-paid`, {
-      method: 'POST',
-    });
-  },
-
-  // Banners
   async getBanners() {
-    return await api.request('/banners/');
+    return this.request('/banners/', { cacheBust: true });
   },
-
-  async uploadBanner(formData) {
-    return await api.request('/banners/upload', {
+  async createBanner(data) {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      if (key === 'media' && data[key] instanceof File) {
+        formData.append(key, data[key]);
+      } else if (data[key] !== null && data[key] !== undefined) {
+        formData.append(key, data[key]);
+      }
+    });
+    return this.request('/banners/upload', {
       method: 'POST',
       body: formData,
       isForm: true,
     });
   },
-
   async deleteBanner(id) {
-    return await api.request(`/banners/${id}/`, {
+    return this.request(`/banners/${id}/`, {
       method: 'DELETE',
     });
-  },
-
-  // Users
-  async getUsers() {
-    return await api.request('/users/');
   },
 };

@@ -5,24 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Login | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/admin-mobile.css" />
+    <script>
+      // Set API Base URL
+      const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
+      const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
+      
+      if (!window.API_BASE_URL) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          window.API_BASE_URL = LOCAL_API_URL;
+        } else {
+          window.API_BASE_URL = PRODUCTION_API_URL;
+        }
+      }
+      window.BACKEND_BASE_URL = window.API_BASE_URL.replace('/api', '');
+    </script>
   </head>
   <body>
     <main>
       <section class="login-section">
         <div class="form-card glass-card" style="text-align:center;">
-          <p class="badge">Admin Control</p>
-          <h1 class="login-title">Sign in to dashboard</h1>
+          <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 2rem; letter-spacing: 0.3em; margin-bottom: 0.5rem; color: #FFFFFF;">EDITHCLOTHS</h1>
+            <p class="badge">Admin Control</p>
+          </div>
+          <h2 class="login-title">Sign in to dashboard</h2>
           <form id="admin-login-form">
             <div class="form-group">
               <label for="admin-user">Username</label>
-              <input id="admin-user" name="username" required />
+              <input id="admin-user" name="username" required placeholder="Enter username" />
             </div>
             <div class="form-group">
               <label for="admin-pass">Password</label>
-              <input id="admin-pass" name="password" type="password" required />
+              <input id="admin-pass" name="password" type="password" required placeholder="Enter password" />
             </div>
             <button class="btn" type="submit">Login</button>
-            <p id="admin-login-error" style="color:var(--danger);margin-top:1rem"></p>
+            <p id="admin-login-error" style="color:var(--danger);margin-top:1rem;min-height:1.5rem;"></p>
           </form>
         </div>
       </section>

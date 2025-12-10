@@ -1,97 +1,121 @@
-import { adminAuth } from './admin-auth.js';
 import { adminApi } from './admin-api.js';
+import { adminAuth } from './admin-auth.js';
+import { mountAdminNavbar } from './admin-navbar.js';
 
-if (!adminAuth.requireAuth()) return;
+if (!adminAuth.requireAuth()) {
+  // Redirect handled
+}
 
-async function loadBanners() {
+mountAdminNavbar();
+
+const loadBanners = async () => {
   try {
     const banners = await adminApi.getBanners();
-    if (!banners) return;
+    const container = document.getElementById('banners-list');
+    
+    if (!container) return;
     
     if (banners.length === 0) {
-      document.getElementById('banners-list').innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--text-light);">No banners found</p>';
+      container.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:2rem;">No banners found.</p>';
       return;
     }
     
-    const bannersHtml = banners.map(banner => {
-      const imageUrl = banner.image_url || banner.image || '../assets/img/placeholder.jpg';
-      return `
-        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(230,230,230,0.1); display: grid; grid-template-columns: 200px 1fr auto; gap: 1.5rem; align-items: center;">
-          <img src="${imageUrl}" alt="Banner" style="width: 200px; height: 100px; object-fit: cover; border-radius: var(--radius);">
-          <div>
-            <p style="font-weight: 600; margin-bottom: 0.5rem;">${banner.title || 'No title'}</p>
-            <p style="color: var(--text-light); font-size: 0.9rem;">${banner.subtitle || 'No subtitle'}</p>
-            ${banner.link ? `<p style="color: var(--text-light); font-size: 0.9rem;">Link: ${banner.link}</p>` : ''}
-          </div>
-          <button class="btn small ghost" onclick="deleteBanner(${banner.id})">Delete</button>
-        </div>
-      `;
-    }).join('');
+    // Sort by display_order
+    const sortedBanners = banners.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
     
-    document.getElementById('banners-list').innerHTML = bannersHtml;
-  } catch (error) {
-    console.error('Banners load error:', error);
-    document.getElementById('banners-list').innerHTML = `<p style="padding: 2rem; color: var(--danger);">Error: ${error.message}</p>`;
-  }
-}
-
-window.deleteBanner = async (id) => {
-  if (!confirm('Are you sure you want to delete this banner?')) return;
-  try {
-    await adminApi.deleteBanner(id);
-    loadBanners();
-  } catch (error) {
-    alert('Error deleting banner: ' + error.message);
+    container.innerHTML = sortedBanners.map(banner => `
+      <div class="cart-item">
+        ${banner.media_url ? `
+          <img src="${banner.media_url}" alt="${banner.title}" style="width:120px;height:80px;object-fit:cover;border-radius:var(--radius);" />
+        ` : '<div style="width:120px;height:80px;background:rgba(255,255,255,0.1);border-radius:var(--radius);"></div>'}
+        <div class="cart-item-info">
+          <h3>${banner.title || 'Untitled'}</h3>
+          <p>${banner.subtitle || ''}</p>
+          <p>Order: ${banner.display_order || 0}</p>
+          ${banner.link ? `<p><a href="${banner.link}" target="_blank">${banner.link}</a></p>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:flex-end;">
+          <span class="badge">${banner.is_active ? 'Active' : 'Inactive'}</span>
+          <button class="btn small ghost" onclick="deleteBanner(${banner.id}, '${banner.title || 'Banner'}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+    
+  } catch (err) {
+    console.error('Error loading banners:', err);
+    const container = document.getElementById('banners-list');
+    if (container) {
+      container.innerHTML = '<p style="color:var(--danger);">Error loading banners. Please try again.</p>';
+    }
   }
 };
 
-// Delete all banners
-document.getElementById('delete-all-banners')?.addEventListener('click', async () => {
-  if (!confirm('⚠️ WARNING: This will delete ALL banners permanently. This action cannot be undone!\n\nAre you absolutely sure?')) {
-    return;
-  }
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  const form = event.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const errorEl = document.getElementById('form-error');
   
-  if (!confirm('This is your last chance. Delete ALL banners?')) {
+  if (errorEl) errorEl.textContent = '';
+  
+  try {
+    const formData = {
+      title: document.getElementById('title').value.trim(),
+      subtitle: document.getElementById('subtitle').value.trim(),
+      button_text: document.getElementById('button_text').value.trim() || null,
+      link: document.getElementById('link').value.trim() || null,
+      display_order: parseInt(document.getElementById('display_order').value) || 0,
+      is_active: document.getElementById('is_active').checked,
+      media: document.getElementById('media').files[0] || null,
+    };
+    
+    if (!formData.media) {
+      throw new Error('Please upload a banner image.');
+    }
+    
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading...';
+    }
+    
+    await adminApi.createBanner(formData);
+    
+    alert('Banner uploaded successfully!');
+    form.reset();
+    loadBanners();
+    
+  } catch (err) {
+    if (errorEl) {
+      errorEl.textContent = err.message || 'Error uploading banner. Please try again.';
+    }
+    console.error('Error uploading banner:', err);
+    
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Upload Banner';
+    }
+  }
+};
+
+window.deleteBanner = async (id, name) => {
+  if (!confirm(`Are you sure you want to delete "${name}"?`)) {
     return;
   }
   
   try {
-    const result = await adminApi.bulkDelete('banners');
-    alert(`Successfully deleted ${result.deleted_count} banner(s)`);
+    await adminApi.deleteBanner(id);
+    alert('Banner deleted successfully!');
     loadBanners();
-  } catch (error) {
-    alert('Error deleting banners: ' + error.message);
+  } catch (err) {
+    alert('Error deleting banner: ' + (err.message || 'Unknown error'));
   }
-});
+};
 
-document.getElementById('banner-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const errorEl = document.getElementById('banner-error');
-  errorEl.textContent = '';
+document.addEventListener('DOMContentLoaded', () => {
+  loadBanners();
   
-  try {
-    const formData = new FormData();
-    formData.append('image', document.getElementById('banner-image').files[0]);
-    const title = document.getElementById('banner-title').value;
-    const subtitle = document.getElementById('banner-subtitle').value;
-    const link = document.getElementById('banner-link').value;
-    const order = document.getElementById('banner-order').value;
-    
-    if (title) formData.append('title', title);
-    if (subtitle) formData.append('subtitle', subtitle);
-    if (link) formData.append('link', link);
-    if (order) formData.append('order', order);
-    
-    await adminApi.uploadBanner(formData);
-    document.getElementById('banner-form').reset();
-    loadBanners();
-    errorEl.textContent = 'Banner uploaded successfully!';
-    errorEl.style.color = 'var(--success)';
-    setTimeout(() => errorEl.textContent = '', 3000);
-  } catch (error) {
-    errorEl.textContent = error.message;
+  const form = document.getElementById('banner-form');
+  if (form) {
+    form.addEventListener('submit', handleSubmit);
   }
 });
-
-loadBanners();
-

@@ -5,30 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Products | Admin | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/admin-mobile.css" />
+    <script>
+      const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
+      const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
+      if (!window.API_BASE_URL) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          window.API_BASE_URL = LOCAL_API_URL;
+        } else {
+          window.API_BASE_URL = PRODUCTION_API_URL;
+        }
+      }
+      window.BACKEND_BASE_URL = window.API_BASE_URL.replace('/api', '');
+    </script>
   </head>
   <body>
     <header data-component="admin-navbar"></header>
     <main>
       <section class="section">
         <div class="section-header">
-          <h1 class="section-title">Products</h1>
-          <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-            <a href="product-add.html" class="btn">Add Product</a>
-            <button class="btn ghost" id="delete-all-products" style="color: var(--danger);">Delete All Products</button>
-          </div>
+          <h2 class="section-title">Products</h2>
+          <a href="/admin/product-add.html" class="btn">Add Product</a>
         </div>
-        <div id="success-message" style="display: none; padding: 1rem; margin-bottom: 1rem; background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.5); border-radius: var(--radius); color: #4CAF50; text-align: center;">
-          <strong>✅ Product created successfully!</strong>
-        </div>
-        <div class="glass-card">
-          <div id="products-list"></div>
+        
+        <div id="products-list">
+          <p style="color:var(--text-light);text-align:center;padding:2rem;">Loading...</p>
         </div>
       </section>
     </main>
-    <script type="module">
-      import { mountAdminNavbar } from '../assets/js/admin-navbar.js';
-      mountAdminNavbar();
-    </script>
     <script type="module" src="../assets/js/admin-products.js"></script>
   </body>
 </html>
