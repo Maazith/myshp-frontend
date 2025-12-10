@@ -184,8 +184,11 @@ export const adminApi = {
       }
       return await response.text();
     } catch (err) {
+      // Reconstruct URL for error logging (fullUrl might not be defined if error occurred early)
+      const apiBaseUrl = getApiBaseUrl();
+      const errorUrl = `${apiBaseUrl}${requestPath}`;
       console.error('[Admin API] Request failed:', {
-        url: fullUrl || 'unknown',
+        url: errorUrl,
         error: err.message,
         stack: err.stack
       });

@@ -91,9 +91,10 @@ if (!isDashboardPage()) {
     }
     
   } catch (err) {
+    const errorMessage = err.message || 'Unknown error';
     console.error('[Admin Dashboard] Error loading dashboard:', {
       error: err,
-      message: err.message,
+      message: errorMessage,
       stack: err.stack,
       apiBaseUrl: adminApi.baseUrl,
       hasToken: !!adminApi.accessToken
