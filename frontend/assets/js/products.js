@@ -28,18 +28,44 @@ const fetchProducts = async () => {
       ? `/products/?gender=${gender}&expand_by_color=false&${timestamp}` 
       : `/products/?expand_by_color=false&${timestamp}`;
     
+    console.log('📦 Fetching products from:', api.baseUrl + url);
+    console.log('📦 Gender filter:', gender || 'all');
+    
     const data = await api.request(url, { cacheBust: true });
+    
+    console.log('📦 Products received:', data);
+    console.log('📦 Number of products:', data ? (Array.isArray(data) ? data.length : 'not an array') : 'null/undefined');
     
     // Handle empty products array gracefully
     if (!data || !Array.isArray(data) || data.length === 0) {
+      console.log('⚠️ No products found in response');
       container.innerHTML = '<p style="color:#E6E6E6;text-align:center;padding:2rem;">No products found.</p>';
       return;
     }
     
+    // Log each product for debugging
+    data.forEach((product, index) => {
+      console.log(`  Product ${index + 1}:`, {
+        id: product.id,
+        name: product.name || product.title,
+        title: product.title,
+        base_price: product.base_price,
+        hero_media_url: product.hero_media_url,
+        is_active: product.is_active,
+        gender: product.gender
+      });
+    });
+    
     container.innerHTML = data.map((product) => createProductCard(product)).join('');
     initCarousels();
+    console.log('✅ Products rendered successfully');
   } catch (err) {
     console.error('❌ Error fetching products:', err);
+    console.error('❌ Error details:', {
+      message: err.message,
+      stack: err.stack,
+      apiBaseUrl: api.baseUrl
+    });
     // User-friendly error message
     container.innerHTML = '<p style="color:#E6E6E6;text-align:center;padding:2rem;">No products found. Please try again later.</p>';
   }

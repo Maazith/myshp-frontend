@@ -118,11 +118,20 @@ const loadBanners = async () => {
 
 const bootstrapHome = async () => {
   try {
+    console.log('🏠 Loading homepage data from:', api.baseUrl);
+    
     const [banners, men, women] = await Promise.all([
       api.request('/banners/').catch(() => []), // Return empty array on error
       api.request('/products/?gender=MEN&expand_by_color=false').catch(() => []), // Return empty array on error
       api.request('/products/?gender=WOMEN&expand_by_color=false').catch(() => []), // Return empty array on error
     ]);
+    
+    console.log('🏠 Homepage data received:', {
+      banners: banners?.length || 0,
+      menProducts: men?.length || 0,
+      womenProducts: women?.length || 0
+    });
+    
     renderBanners(banners || []);
     renderProducts(men || [], menWrapper);
     renderProducts(women || [], womenWrapper);
@@ -131,7 +140,7 @@ const bootstrapHome = async () => {
     if (bannerPollInterval) clearInterval(bannerPollInterval);
     bannerPollInterval = setInterval(loadBanners, 5000);
   } catch (err) {
-    console.error('Error loading homepage:', err);
+    console.error('❌ Error loading homepage:', err);
     // Gracefully handle errors - show empty states
     renderBanners([]);
     renderProducts([], menWrapper);

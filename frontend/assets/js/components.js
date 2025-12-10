@@ -245,6 +245,7 @@ export const getAbsoluteImageUrl = (imageUrl) => {
 
 export const createProductCard = (product) => {
   // Use product's hero image or first variant image
+  // Support both 'name' (from serializer) and 'title' fields
   let imageUrl = product.hero_media_url || product.hero_media;
   
   // If no hero image, try to get first variant image
@@ -263,7 +264,8 @@ export const createProductCard = (product) => {
   
   const productId = product.id;
   const price = product.base_price || 0;
-  const title = product.title || 'Untitled Product';
+  // Support both 'name' (from serializer) and 'title' fields for compatibility
+  const title = product.name || product.title || 'Untitled Product';
   
   // Show price range if multiple variants with different prices
   let priceDisplay = formatCurrency(price);
