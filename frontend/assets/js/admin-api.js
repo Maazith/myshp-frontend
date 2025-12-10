@@ -30,8 +30,19 @@ const getApiBaseUrl = () => {
   if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
     return window.VERCEL_ENV_API_BASE_URL;
   }
-  // Priority 4: Production fallback (Render backend)
-  return 'https://myshp-backend.onrender.com/api';
+  // Priority 4: Production fallback (Render backend) - ALWAYS USE IN PRODUCTION
+  const RENDER_BACKEND_URL = 'https://myshp-backend.onrender.com/api';
+  
+  // In production (not localhost), always use Render backend
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '') {
+      return RENDER_BACKEND_URL;
+    }
+  }
+  
+  // Local development fallback
+  return RENDER_BACKEND_URL;
 };
 
 export const adminApi = {
@@ -137,13 +148,32 @@ export const adminApi = {
         } catch {
           errorData = { detail: errorText || `HTTP ${response.status}` };
         }
-        const errorMessage = errorData.detail || errorData.message || `API request failed: ${response.status}`;
+        const errorMessage = errorData.detail || errorData.message || errorData.error || `API request failed: ${response.status}`;
+        
+        // Enhanced error logging with full details
         console.error(`[Admin API] Error ${response.status}:`, {
           url: fullUrl,
+          method: method,
+          status: response.status,
+          statusText: response.statusText,
           error: errorMessage,
-          errorData
+          errorData: errorData,
+          responseHeaders: Object.fromEntries(response.headers.entries()),
+          hasToken: !!localStorage.getItem(ADMIN_ACCESS_KEY)
         });
-        throw new Error(errorMessage);
+        
+        // Provide more specific error messages
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please login again.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. You do not have permission to perform this action.');
+        } else if (response.status === 404) {
+          throw new Error(`Endpoint not found: ${requestPath}. Please check the API path.`);
+        } else if (response.status === 500) {
+          throw new Error(`Server error: ${errorMessage}. Please check backend logs.`);
+        } else {
+          throw new Error(errorMessage);
+        }
       }
       
       const contentType = response.headers.get('content-type');
@@ -257,16 +287,37 @@ export const adminApi = {
     return this.request(`/products/id/${id}/`, { cacheBust: true });
   },
   async createProduct(data) {
+    // If data is already FormData, use it directly
+    if (data instanceof FormData) {
+      return this.request('/products/add', {
+        method: 'POST',
+        body: data,
+        isForm: true,
+      });
+    }
+    
+    // Otherwise, build FormData from object
     const formData = new FormData();
     Object.keys(data).forEach(key => {
-      if (key === 'hero_media' && data[key] instanceof File) {
-        formData.append(key, data[key]);
-      } else if (key === 'variants' && Array.isArray(data[key])) {
-        formData.append(key, JSON.stringify(data[key]));
-      } else if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key]);
+      const value = data[key];
+      if (value === null || value === undefined) {
+        return; // Skip null/undefined values
+      }
+      
+      // Backend expects 'category_id' for write operations (see serializer)
+      if (key === 'category' && value) {
+        formData.append('category_id', value);
+      } else if (key === 'hero_media' && value instanceof File) {
+        formData.append(key, value);
+      } else if (key === 'variants' && Array.isArray(value)) {
+        formData.append(key, JSON.stringify(value));
+      } else if (typeof value === 'boolean') {
+        formData.append(key, value ? 'true' : 'false');
+      } else if (key !== 'category') { // Skip 'category' as we already handled it
+        formData.append(key, value);
       }
     });
+    
     return this.request('/products/add', {
       method: 'POST',
       body: formData,
@@ -274,16 +325,37 @@ export const adminApi = {
     });
   },
   async updateProduct(id, data) {
+    // If data is already FormData, use it directly
+    if (data instanceof FormData) {
+      return this.request(`/products/${id}/edit`, {
+        method: 'PUT',
+        body: data,
+        isForm: true,
+      });
+    }
+    
+    // Otherwise, build FormData from object
     const formData = new FormData();
     Object.keys(data).forEach(key => {
-      if (key === 'hero_media' && data[key] instanceof File) {
-        formData.append(key, data[key]);
-      } else if (key === 'variants' && Array.isArray(data[key])) {
-        formData.append(key, JSON.stringify(data[key]));
-      } else if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key]);
+      const value = data[key];
+      if (value === null || value === undefined) {
+        return; // Skip null/undefined values
+      }
+      
+      // Backend expects 'category_id' for write operations (see serializer)
+      if (key === 'category' && value) {
+        formData.append('category_id', value);
+      } else if (key === 'hero_media' && value instanceof File) {
+        formData.append(key, value);
+      } else if (key === 'variants' && Array.isArray(value)) {
+        formData.append(key, JSON.stringify(value));
+      } else if (typeof value === 'boolean') {
+        formData.append(key, value ? 'true' : 'false');
+      } else if (key !== 'category') { // Skip 'category' as we already handled it
+        formData.append(key, value);
       }
     });
+    
     return this.request(`/products/${id}/edit`, {
       method: 'PUT',
       body: formData,
@@ -315,6 +387,27 @@ export const adminApi = {
   },
   async deleteBanner(id) {
     return this.request(`/banners/${id}/`, {
+      method: 'DELETE',
+    });
+  },
+  // Categories
+  async getCategories() {
+    return this.request('/categories/', { cacheBust: true });
+  },
+  async createCategory(data) {
+    return this.request('/categories/add', {
+      method: 'POST',
+      body: data,
+    });
+  },
+  async updateCategory(id, data) {
+    return this.request(`/categories/${id}/`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
+  async deleteCategory(id) {
+    return this.request(`/categories/${id}/`, {
       method: 'DELETE',
     });
   },

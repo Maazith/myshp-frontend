@@ -90,8 +90,14 @@ const loadProduct = async () => {
     }
     
   } catch (err) {
-    console.error('Error loading product:', err);
-    alert('Error loading product. Please try again.');
+    console.error('[Admin Product Edit] Error loading product:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      apiBaseUrl: adminApi.baseUrl,
+      hasToken: !!adminApi.accessToken
+    });
+    alert(`Error loading product: ${err.message || 'Unknown error'}. Check console for details.`);
     window.location.href = '/admin/products.html';
   }
 };
@@ -149,7 +155,7 @@ const handleSubmit = async (event) => {
     const formData = {
       title: document.getElementById('title').value.trim(),
       description: document.getElementById('description').value.trim(),
-      category_id: document.getElementById('category').value || null,
+      category: document.getElementById('category').value || null, // API layer converts to 'category_id'
       gender: document.getElementById('gender').value,
       base_price: parseFloat(document.getElementById('base_price').value) || 0,
       is_active: document.getElementById('is_active').checked,
@@ -183,10 +189,17 @@ const handleSubmit = async (event) => {
     window.location.href = '/admin/products.html';
     
   } catch (err) {
+    console.error('[Admin Product Edit] Error updating product:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      apiBaseUrl: adminApi.baseUrl,
+      hasToken: !!adminApi.accessToken
+    });
     if (errorEl) {
-      errorEl.textContent = err.message || 'Error updating product. Please try again.';
+      errorEl.textContent = err.message || 'Error updating product. Please try again. Check console for details.';
+      errorEl.style.display = 'block';
     }
-    console.error('Error updating product:', err);
     
     if (submitBtn) {
       submitBtn.disabled = false;

@@ -11,18 +11,35 @@
   // 3. Production fallback (Render backend)
   
   const getApiBaseUrl = () => {
-    // Check for Vercel environment variable (set in Vercel dashboard)
+    // Priority 1: Vercel environment variable (set in Vercel dashboard)
     if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) {
       return process.env.NEXT_PUBLIC_API_URL;
     }
     
-    // Check for window variable (set by HTML script tag)
+    // Priority 2: Window variable (set by HTML script tag)
     if (typeof window !== 'undefined' && window.API_BASE_URL) {
       return window.API_BASE_URL;
     }
     
-    // Production fallback - Render backend
-    return 'https://myshp-backend.onrender.com/api';
+    // Priority 3: Vercel environment variable (alternative)
+    if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
+      return window.VERCEL_ENV_API_BASE_URL;
+    }
+    
+    // Priority 4: Production fallback - Render backend (ALWAYS USE THIS IN PRODUCTION)
+    // This is the correct Render backend URL
+    const RENDER_BACKEND_URL = 'https://myshp-backend.onrender.com/api';
+    
+    // In production (not localhost), always use Render backend
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '') {
+        return RENDER_BACKEND_URL;
+      }
+    }
+    
+    // Local development fallback
+    return RENDER_BACKEND_URL;
   };
   
   // Set API base URL globally

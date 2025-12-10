@@ -91,10 +91,24 @@ if (!isDashboardPage()) {
     }
     
   } catch (err) {
-    console.error('Error loading dashboard:', err);
+    console.error('[Admin Dashboard] Error loading dashboard:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      apiBaseUrl: adminApi.baseUrl,
+      hasToken: !!adminApi.accessToken
+    });
     const statsContainer = document.getElementById('dashboard-stats');
     if (statsContainer) {
-      statsContainer.innerHTML = '<p style="color:var(--danger);">Error loading dashboard data.</p>';
+      statsContainer.innerHTML = `<div class="form-card" style="background:var(--danger);color:#fff;padding:1.5rem;">
+        <h3>Error Loading Dashboard</h3>
+        <p><strong>Error:</strong> ${err.message || 'Unknown error'}</p>
+        <p style="font-size:0.85rem;margin-top:0.5rem;">Check browser console for details. API Base URL: ${adminApi.baseUrl}</p>
+      </div>`;
+    }
+    const ordersContainer = document.getElementById('recent-orders');
+    if (ordersContainer) {
+      ordersContainer.innerHTML = '<p style="color:var(--danger);">Error loading recent orders.</p>';
     }
   }
 };

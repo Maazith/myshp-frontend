@@ -85,7 +85,7 @@ const handleSubmit = async (event) => {
     const formData = {
       title: document.getElementById('title').value.trim(),
       description: document.getElementById('description').value.trim(),
-      category_id: document.getElementById('category').value || null,
+      category: document.getElementById('category').value || null, // API layer converts to 'category_id'
       gender: document.getElementById('gender').value,
       base_price: parseFloat(document.getElementById('base_price').value) || 0,
       is_active: document.getElementById('is_active').checked,
@@ -120,10 +120,17 @@ const handleSubmit = async (event) => {
     window.location.href = '/admin/products.html';
     
   } catch (err) {
+    console.error('[Admin Product Add] Error creating product:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      apiBaseUrl: adminApi.baseUrl,
+      hasToken: !!adminApi.accessToken
+    });
     if (errorEl) {
-      errorEl.textContent = err.message || 'Error creating product. Please try again.';
+      errorEl.textContent = err.message || 'Error creating product. Please try again. Check console for details.';
+      errorEl.style.display = 'block';
     }
-    console.error('Error creating product:', err);
     
     if (submitBtn) {
       submitBtn.disabled = false;

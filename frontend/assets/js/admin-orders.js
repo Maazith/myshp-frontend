@@ -48,10 +48,20 @@ if (!isOrdersPage()) {
     `).join('');
     
   } catch (err) {
-    console.error('Error loading orders:', err);
+    console.error('[Admin Orders] Error loading orders:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      apiBaseUrl: adminApi.baseUrl,
+      hasToken: !!adminApi.accessToken
+    });
     const container = document.getElementById('orders-list');
     if (container) {
-      container.innerHTML = '<p style="color:var(--danger);">Error loading orders. Please try again.</p>';
+      container.innerHTML = `<div class="form-card" style="background:var(--danger);color:#fff;padding:1.5rem;">
+        <h3>Error Loading Orders</h3>
+        <p><strong>Error:</strong> ${err.message || 'Unknown error'}</p>
+        <p style="font-size:0.85rem;margin-top:0.5rem;">Check browser console for details. API Base URL: ${adminApi.baseUrl}</p>
+      </div>`;
     }
   }
 };
