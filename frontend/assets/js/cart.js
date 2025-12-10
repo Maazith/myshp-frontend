@@ -110,7 +110,9 @@ const loadCart = async () => {
     const cart = await api.request('/cart/');
     renderItems(cart);
   } catch (err) {
-    itemsContainer.innerHTML = `<p>${err.message}</p>`;
+    console.error('Cart load error:', err);
+    // User-friendly error message
+    itemsContainer.innerHTML = '<p style="color:#E6E6E6;text-align:center;padding:2rem;">Unable to load cart. Please refresh the page.</p>';
   }
 };
 

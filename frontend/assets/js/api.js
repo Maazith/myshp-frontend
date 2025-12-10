@@ -94,18 +94,35 @@ export const api = {
     }
     
     try {
-      const response = await fetch(`${getApiBaseUrl()}${requestPath}`, options);
+      const apiBaseUrl = getApiBaseUrl();
+      const fullUrl = `${apiBaseUrl}${requestPath}`;
+      
+      const response = await fetch(fullUrl, options);
+      
       if (response.status === 204) return null;
+      
       const data = await response.json().catch(() => ({}));
+      
       if (!response.ok) {
-        // Handle 401 errors without redirecting (no login system)
+        // Handle 401 errors (unauthorized)
         if (response.status === 401) {
-          // Clear tokens but don't redirect
+          // Clear tokens but don't redirect automatically
           localStorage.removeItem(ACCESS_KEY);
           localStorage.removeItem(REFRESH_KEY);
           localStorage.removeItem(USER_KEY);
+          throw new Error('Please log in to continue.');
         }
-        // Handle validation errors (400)
+        
+        // Handle 404 errors (not found)
+        if (response.status === 404) {
+          // Return empty array/object for list endpoints, null for single items
+          if (path.includes('/products/') || path.includes('/categories/') || path.includes('/banners/')) {
+            return [];
+          }
+          throw new Error('Item not found.');
+        }
+        
+        // Handle 400 errors (validation errors)
         if (response.status === 400 && data.detail) {
           let errorMsg = '';
           if (typeof data.detail === 'object') {
@@ -122,26 +139,38 @@ export const api = {
           } else {
             errorMsg = data.detail;
           }
-          throw new Error(errorMsg || 'Validation error. Please check your input.');
+          throw new Error(errorMsg || 'Please check your input and try again.');
         }
-        throw new Error(data.detail || data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
+        
+        // Handle 500 errors (server errors)
+        if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.');
+        }
+        
+        // Generic error handling
+        const errorMessage = data.detail || data.message || data.error || `Error ${response.status}`;
+        throw new Error(errorMessage);
       }
+      
       return data;
     } catch (error) {
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        // Enhanced error message with helpful solutions
+      // Network/connection errors
+      if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
         const backendUrl = getApiBaseUrl().replace('/api', '');
-        const errorMsg = `Failed to connect to server at ${getApiBaseUrl()}. `;
-        let solution = '';
         
-        if (backendUrl.includes('onrender.com')) {
-          solution = `\n\nPossible solutions:\n1. Backend not deployed - Deploy at https://dashboard.render.com\n2. Service sleeping (free tier) - Wait 30-60 seconds or wake it up\n3. Check service name matches: myshp-backend\n4. Use local backend for testing: http://127.0.0.1:8000/api`;
-        } else if (backendUrl.includes('127.0.0.1') || backendUrl.includes('localhost')) {
-          solution = `\n\nTo fix:\n1. Start backend: cd backend && python manage.py runserver\n2. Make sure backend is running on port 8000\n3. Check http://127.0.0.1:8000/api/ in browser`;
+        // User-friendly error message based on endpoint type
+        if (path.includes('/products/')) {
+          throw new Error('Unable to load products. Please check your connection and try again.');
+        } else if (path.includes('/cart/')) {
+          throw new Error('Unable to load cart. Please refresh the page.');
+        } else if (path.includes('/orders/')) {
+          throw new Error('Unable to load orders. Please try again later.');
+        } else {
+          throw new Error('Unable to connect to server. Please check your connection.');
         }
-        
-        throw new Error(errorMsg + solution);
       }
+      
+      // Re-throw other errors as-is
       throw error;
     }
   },

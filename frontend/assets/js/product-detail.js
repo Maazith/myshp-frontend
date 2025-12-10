@@ -150,10 +150,19 @@ const updatePrice = () => {
 };
 
 const loadProduct = async () => {
-  if (!productId) return;
+  if (!productId) {
+    holder.error.textContent = 'Invalid product.';
+    return;
+  }
   try {
     // Use ID endpoint for product detail with cache-busting
     const product = await api.request(`/products/id/${productId}/`, { cacheBust: true });
+    
+    if (!product) {
+      holder.error.textContent = 'Product not found.';
+      return;
+    }
+    
     state.product = product;
     state.variants = product.variants || [];
     holder.title.textContent = product.title;
@@ -171,8 +180,9 @@ const loadProduct = async () => {
     renderMedia(product, state.selectedColor);
     updatePrice();
   } catch (err) {
-    holder.error.textContent = err.message || 'Error loading product';
     console.error('Product load error:', err);
+    // User-friendly error message
+    holder.error.textContent = 'Product not found. Please try again.';
   }
 };
 

@@ -27,26 +27,21 @@ const fetchProducts = async () => {
     const url = gender 
       ? `/products/?gender=${gender}&expand_by_color=false&${timestamp}` 
       : `/products/?expand_by_color=false&${timestamp}`;
-    console.log('📦 Fetching products from:', url, 'Gender filter:', gender);
-    const data = await api.request(url, { cacheBust: true });
-    console.log('📦 Products received:', data);
-    console.log('📦 Number of products:', data ? data.length : 0);
     
-    if (!data || !data.length) {
-      container.innerHTML = '<p style="color:#E6E6E6;text-align:center;padding:2rem;">No products yet. Check that products are active and match the gender filter.</p>';
+    const data = await api.request(url, { cacheBust: true });
+    
+    // Handle empty products array gracefully
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      container.innerHTML = '<p style="color:#E6E6E6;text-align:center;padding:2rem;">No products found.</p>';
       return;
     }
-    
-    // Log each product for debugging
-    data.forEach(product => {
-      console.log(`  - Product: ${product.title} (ID: ${product.id}, Gender: ${product.gender})`);
-    });
     
     container.innerHTML = data.map((product) => createProductCard(product)).join('');
     initCarousels();
   } catch (err) {
     console.error('❌ Error fetching products:', err);
-    container.innerHTML = `<p style="color:#E6E6E6;text-align:center;padding:2rem;">Error loading products: ${err.message}. Check browser console for details.</p>`;
+    // User-friendly error message
+    container.innerHTML = '<p style="color:#E6E6E6;text-align:center;padding:2rem;">No products found. Please try again later.</p>';
   }
 };
 
