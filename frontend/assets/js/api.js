@@ -126,7 +126,33 @@ export const api = {
       throw error;
     }
   },
-  // Login and register methods removed - no user login system
+  // Auth methods
+  async login(credentials) {
+    const response = await this.request('/auth/login', {
+      method: 'POST',
+      body: credentials,
+    });
+    
+    // Store tokens
+    if (response.access && response.refresh) {
+      localStorage.setItem(ACCESS_KEY, response.access);
+      localStorage.setItem(REFRESH_KEY, response.refresh);
+      
+      // Store user data if provided
+      if (response.user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+      }
+    }
+    
+    return response;
+  },
+  setAuthTokens(accessToken, refreshToken, user) {
+    localStorage.setItem(ACCESS_KEY, accessToken);
+    localStorage.setItem(REFRESH_KEY, refreshToken);
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+  },
   // Products
   async getProducts(gender = null) {
     const path = gender ? `/products/?gender=${gender}` : '/products/';
