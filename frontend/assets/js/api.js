@@ -56,8 +56,15 @@ export const api = {
     localStorage.removeItem(USER_KEY);
     // No redirect - user login system removed
   },
-  async request(path, { method = 'GET', body, isForm = false } = {}) {
+  async request(path, { method = 'GET', body, isForm = false, cacheBust = false } = {}) {
     const options = { method };
+    
+    // Add cache-busting for GET requests to ensure fresh data
+    let requestPath = path;
+    if (method === 'GET' && cacheBust) {
+      const separator = path.includes('?') ? '&' : '?';
+      requestPath = `${path}${separator}_t=${Date.now()}`;
+    }
     
     // Build headers - don't include Content-Type for FormData
     if (isForm || body instanceof FormData) {
@@ -69,13 +76,19 @@ export const api = {
       options.body = body;
     } else {
       options.headers = buildHeaders();
+      // Add cache control headers for GET requests
+      if (method === 'GET') {
+        options.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+        options.headers['Pragma'] = 'no-cache';
+        options.headers['Expires'] = '0';
+      }
       if (body) {
         options.body = JSON.stringify(body);
       }
     }
     
     try {
-      const response = await fetch(`${getApiBaseUrl()}${path}`, options);
+      const response = await fetch(`${getApiBaseUrl()}${requestPath}`, options);
       if (response.status === 204) return null;
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -169,10 +182,10 @@ export const api = {
   // Products
   async getProducts(gender = null) {
     const path = gender ? `/products/?gender=${gender}` : '/products/';
-    return await this.request(path);
+    return await this.request(path, { cacheBust: true });
   },
   async getProduct(slug) {
-    return await this.request(`/products/${slug}/`);
+    return await this.request(`/products/${slug}/`, { cacheBust: true });
   },
   async getCategories() {
     return await this.request('/categories/');

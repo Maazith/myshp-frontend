@@ -15,11 +15,11 @@ export const adminApi = {
 
   // Products
   async getProducts() {
-    return await api.request('/products/');
+    return await api.request('/products/', { cacheBust: true });
   },
 
   async getProduct(id) {
-    return await api.request(`/products/id/${id}/`);
+    return await api.request(`/products/id/${id}/`, { cacheBust: true });
   },
 
   async createProduct(formData) {
