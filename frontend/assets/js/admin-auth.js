@@ -64,22 +64,40 @@ const handleAdminLogin = () => {
         submitBtn.textContent = 'Logging in...';
       }
       
+      console.log('[Admin Auth] Attempting login...');
+      
       // Call login API
       const payload = await adminApi.login({ username, password });
+      
+      console.log('[Admin Auth] Login response:', payload);
+      
+      // Check if tokens were stored
+      const accessToken = localStorage.getItem('admin_access');
+      const refreshToken = localStorage.getItem('admin_refresh');
+      
+      if (!accessToken) {
+        throw new Error('Login failed: No access token received.');
+      }
+      
+      console.log('[Admin Auth] Tokens stored:', { hasAccess: !!accessToken, hasRefresh: !!refreshToken });
       
       // Check if user data is in response
       let userData = payload.user;
       if (!userData) {
+        console.log('[Admin Auth] User data not in response, fetching from /auth/me...');
         // Fetch user data
         try {
           userData = await adminApi.request('/auth/me');
+          console.log('[Admin Auth] User data fetched:', userData);
         } catch (meError) {
+          console.error('[Admin Auth] Error fetching user data:', meError);
           throw new Error('Login successful but could not verify user account.');
         }
       }
       
       // Verify admin privileges
       if (!userData || !userData.is_staff) {
+        console.error('[Admin Auth] User is not staff:', userData);
         adminApi.logout();
         if (errorEl) {
           errorEl.textContent = 'Access denied. This account does not have admin privileges.';
@@ -94,7 +112,10 @@ const handleAdminLogin = () => {
       // Store user data (already stored by adminApi.login, but ensure it's there)
       if (userData) {
         localStorage.setItem('admin_user', JSON.stringify(userData));
+        console.log('[Admin Auth] User data stored:', userData);
       }
+      
+      console.log('[Admin Auth] Login successful, redirecting to dashboard...');
       
       // Success - redirect to dashboard
       window.location.href = '/admin/dashboard.html';

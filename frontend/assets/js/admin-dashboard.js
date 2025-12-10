@@ -14,8 +14,13 @@ mountAdminNavbar();
 // Load dashboard data
 const loadDashboard = async () => {
   try {
+    console.log('[Admin Dashboard] Loading dashboard data...');
+    console.log('[Admin Dashboard] API Base URL:', adminApi.baseUrl);
+    console.log('[Admin Dashboard] Has token:', !!adminApi.accessToken);
+    
     // Fetch orders to calculate stats
     const orders = await adminApi.getOrders();
+    console.log('[Admin Dashboard] Orders fetched:', orders?.length || 0);
     
     // Calculate stats
     const totalOrders = orders.length;

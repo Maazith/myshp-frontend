@@ -6,17 +6,13 @@
     <title>Add Product | Admin | EdithCloths</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
     <link rel="stylesheet" href="../assets/css/admin-mobile.css" />
+    <script src="../admin-config.js"></script>
     <script>
-      const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
-      const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
-      if (!window.API_BASE_URL) {
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          window.API_BASE_URL = LOCAL_API_URL;
-        } else {
-          window.API_BASE_URL = PRODUCTION_API_URL;
-        }
+      // Override for local development only
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        window.API_BASE_URL = 'http://127.0.0.1:8000/api';
+        window.BACKEND_BASE_URL = 'http://127.0.0.1:8000';
       }
-      window.BACKEND_BASE_URL = window.API_BASE_URL.replace('/api', '');
     </script>
   </head>
   <body>

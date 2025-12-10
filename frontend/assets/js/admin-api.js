@@ -18,12 +18,19 @@ const buildAdminHeaders = (options = {}) => {
 };
 
 const getApiBaseUrl = () => {
+  // Priority 1: Environment variable (Vercel)
+  if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // Priority 2: Window variable set by HTML script tag
   if (typeof window !== 'undefined' && window.API_BASE_URL) {
     return window.API_BASE_URL;
   }
+  // Priority 3: Vercel environment variable
   if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
     return window.VERCEL_ENV_API_BASE_URL;
   }
+  // Priority 4: Production fallback (Render backend)
   return 'https://myshp-backend.onrender.com/api';
 };
 
@@ -78,13 +85,27 @@ export const adminApi = {
       const apiBaseUrl = getApiBaseUrl();
       const fullUrl = `${apiBaseUrl}${requestPath}`;
       
+      // Log request for debugging
+      console.log(`[Admin API] ${method} ${fullUrl}`, {
+        hasToken: !!localStorage.getItem(ADMIN_ACCESS_KEY),
+        isForm: isForm || body instanceof FormData
+      });
+      
       const response = await fetch(fullUrl, options);
+      
+      // Log response for debugging
+      console.log(`[Admin API] Response ${response.status} ${response.statusText}`, {
+        url: fullUrl,
+        ok: response.ok
+      });
       
       // Handle 401 Unauthorized - token expired or invalid
       if (response.status === 401) {
+        console.warn('[Admin API] 401 Unauthorized - attempting token refresh');
         // Try to refresh token
         const refreshed = await this.refreshToken();
         if (refreshed) {
+          console.log('[Admin API] Token refreshed, retrying request');
           // Retry request with new token
           options.headers = buildAdminHeaders();
           if (body && !(body instanceof FormData)) {
@@ -92,13 +113,18 @@ export const adminApi = {
           }
           const retryResponse = await fetch(fullUrl, options);
           if (!retryResponse.ok) {
+            const errorText = await retryResponse.text();
+            console.error(`[Admin API] Retry failed: ${retryResponse.status}`, errorText);
             throw new Error(`API request failed: ${retryResponse.status} ${retryResponse.statusText}`);
           }
           return await retryResponse.json();
         } else {
           // Refresh failed, redirect to login
+          console.error('[Admin API] Token refresh failed, redirecting to login');
           this.logout();
-          window.location.href = '/admin/login.html';
+          if (window.location.pathname !== '/admin/login.html') {
+            window.location.href = '/admin/login.html';
+          }
           throw new Error('Session expired. Please login again.');
         }
       }
@@ -111,17 +137,30 @@ export const adminApi = {
         } catch {
           errorData = { detail: errorText || `HTTP ${response.status}` };
         }
-        throw new Error(errorData.detail || errorData.message || `API request failed: ${response.status}`);
+        const errorMessage = errorData.detail || errorData.message || `API request failed: ${response.status}`;
+        console.error(`[Admin API] Error ${response.status}:`, {
+          url: fullUrl,
+          error: errorMessage,
+          errorData
+        });
+        throw new Error(errorMessage);
       }
       
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
-        return await response.json();
+        const data = await response.json();
+        console.log(`[Admin API] Success:`, { url: fullUrl, dataLength: Array.isArray(data) ? data.length : 'object' });
+        return data;
       }
       return await response.text();
     } catch (err) {
+      console.error('[Admin API] Request failed:', {
+        url: fullUrl || 'unknown',
+        error: err.message,
+        stack: err.stack
+      });
       if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-        throw new Error('Failed to connect to server. Please check your internet connection.');
+        throw new Error('Failed to connect to server. Please check your internet connection and ensure the backend is running.');
       }
       throw err;
     }
