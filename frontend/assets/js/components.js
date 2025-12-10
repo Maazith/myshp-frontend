@@ -87,7 +87,11 @@ export const mountNavbar = async () => {
   const currentUser = api.currentUser();
   
   // Get backend base URL for login/signup links
-  const backendBaseUrl = api.baseUrl.replace('/api', '');
+  let backendBaseUrl = api.baseUrl.replace('/api', '');
+  // Fallback if baseUrl is not set
+  if (!backendBaseUrl || backendBaseUrl === '/api' || backendBaseUrl.endsWith('/api')) {
+    backendBaseUrl = 'https://myshp-backend.onrender.com';
+  }
   
   // Determine correct href paths based on current location
   const getLinkHref = (link) => {
@@ -136,7 +140,11 @@ export const mountNavbar = async () => {
               return `<a class="${isActive('myorders.html')}" href="${myOrdersHref}">My Orders</a>
                       <a href="#" id="user-logout" style="color: var(--danger);">Logout</a>`;
             })()
-          : `<a href="${backendBaseUrl}/login/?next=${encodeURIComponent(window.location.href)}" id="user-login">Login</a>`
+          : (() => {
+              const currentUrl = encodeURIComponent(window.location.href);
+              const loginUrl = `${backendBaseUrl}/login/?next=${currentUrl}`;
+              return `<a href="${loginUrl}" id="user-login" target="_self">Login</a>`;
+            })()
         }
       </div>` : ''}
     </nav>
