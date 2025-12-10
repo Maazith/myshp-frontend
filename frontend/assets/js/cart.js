@@ -137,6 +137,14 @@ itemsContainer?.addEventListener('click', async (event) => {
 });
 
 checkoutBtn?.addEventListener('click', () => {
+  // Check authentication before going to checkout
+  if (!api.isAuthenticated) {
+    // Redirect to login with return URL to checkout
+    const checkoutUrl = window.location.origin + window.location.pathname.replace('cart.html', 'checkout.html');
+    const backendBaseUrl = api.baseUrl.replace('/api', '');
+    window.location.href = `${backendBaseUrl}/login/?next=${encodeURIComponent(checkoutUrl)}`;
+    return;
+  }
   window.location.href = 'checkout.html';
 });
 
