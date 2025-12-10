@@ -82,6 +82,13 @@ export const mountNavbar = async () => {
   // Always show nav links (no auth required)
   const showNavLinks = true;
   
+  // Check authentication status
+  const isAuthenticated = api.isAuthenticated;
+  const currentUser = api.currentUser();
+  
+  // Get backend base URL for login/signup links
+  const backendBaseUrl = api.baseUrl.replace('/api', '');
+  
   // Determine correct href paths based on current location
   const getLinkHref = (link) => {
     const currentPath = window.location.pathname;
@@ -123,6 +130,10 @@ export const mountNavbar = async () => {
         ${NAV_LINKS.map((link) => {
           return `<a class="${isActive(link.href)}" href="${getLinkHref(link)}">${link.label}</a>`;
         }).join('')}
+        ${isAuthenticated 
+          ? `<a href="#" id="user-logout" style="color: var(--danger);">Logout</a>` 
+          : `<a href="${backendBaseUrl}/login/?next=${encodeURIComponent(window.location.href)}" id="user-login">Login</a>`
+        }
       </div>` : ''}
     </nav>
   `;
@@ -152,7 +163,21 @@ export const mountNavbar = async () => {
       });
     });
   }
-  // Logout button removed - no user login system
+  
+  // Handle logout button
+  const logoutBtn = document.getElementById('user-logout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      // Clear authentication tokens
+      api.logout();
+      // Redirect to home page
+      const currentPath = window.location.pathname;
+      const isInPages = currentPath.includes('/pages/') || currentPath.includes('pages/');
+      const homeUrl = isInPages ? '../index.html' : 'index.html';
+      window.location.href = homeUrl;
+    });
+  }
 };
 
 export const mountFooter = async () => {
