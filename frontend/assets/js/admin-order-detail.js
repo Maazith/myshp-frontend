@@ -23,10 +23,24 @@ const getOrderId = () => {
 };
 
 const renderOrderTracker = (status) => {
-  const activeIndex = orderStages.findIndex((stage) => stage.key === status);
+  // Custom order stages for admin (simplified flow matching backend)
+  const adminStages = [
+    { key: 'PLACED', label: 'Placed' },
+    { key: 'SHIPPED', label: 'Shipped' },
+    { key: 'OUT_FOR_DELIVERY', label: 'Out for Delivery' },
+    { key: 'DELIVERED', label: 'Delivered' },
+  ];
+  
+  // Map payment statuses to PLACED for display
+  let displayStatus = status;
+  if (status === 'PAYMENT_PENDING' || status === 'PAYMENT_VERIFIED') {
+    displayStatus = 'PLACED';
+  }
+  
+  const activeIndex = adminStages.findIndex((stage) => stage.key === displayStatus);
   return `
     <div class="order-tracker">
-      ${orderStages
+      ${adminStages
         .map(
           (stage, idx) => `
           <div class="tracker-node ${idx <= activeIndex ? 'active' : ''}">
@@ -141,17 +155,31 @@ const loadOrderDetail = async () => {
     // Render status update buttons
     const statusButtons = document.getElementById('status-buttons');
     if (statusButtons) {
-      const statusFlow = ['PLACED', 'PAYMENT_VERIFIED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
-      const currentIndex = statusFlow.indexOf(order.status);
+      // Status flow: PLACED → SHIPPED → REACHED → OUT_FOR_DELIVERY → DELIVERED
+      const statusFlow = ['PLACED', 'SHIPPED', 'REACHED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+      let currentIndex = statusFlow.indexOf(order.status);
+      
+      // If status not in flow, find closest match
+      if (currentIndex < 0) {
+        // Handle payment statuses - start from PLACED
+        if (order.status === 'PAYMENT_PENDING' || order.status === 'PAYMENT_VERIFIED') {
+          currentIndex = -1; // Will show PLACED button
+        }
+      }
+      
+      const nextStatusIndex = currentIndex + 1;
       
       statusButtons.innerHTML = `
         <div class="form-card">
           <p class="badge">Update Status</p>
           <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem;">
-            ${currentIndex < statusFlow.length - 1 ? `
-              <button class="btn" onclick="updateStatus('${statusFlow[currentIndex + 1]}')">
-                Mark as ${statusFlow[currentIndex + 1].replace('_', ' ')}
+            ${nextStatusIndex < statusFlow.length ? `
+              <button class="btn" onclick="updateStatus('${statusFlow[nextStatusIndex]}')">
+                Mark as ${statusFlow[nextStatusIndex].replace(/_/g, ' ')}
               </button>
+            ` : ''}
+            ${currentIndex < 0 && (order.status === 'PAYMENT_PENDING' || order.status === 'PAYMENT_VERIFIED') ? `
+              <button class="btn" onclick="updateStatus('PLACED')">Mark as Placed</button>
             ` : ''}
             ${!order.payment_verified && order.status !== 'DELIVERED' ? `
               <button class="btn ghost" onclick="markPaid()">Mark as Paid</button>
