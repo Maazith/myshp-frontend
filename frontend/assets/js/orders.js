@@ -82,16 +82,27 @@ const renderOrderSuccess = (orders) => {
 
 const loadOrders = async (forceRender = false) => {
   try {
-    const orders = await api.request('/orders/my-orders');
+    // Check if user is authenticated
+    if (!api.isAuthenticated) {
+      console.warn('[Orders] User not authenticated');
+      if (listEl) {
+        listEl.innerHTML = '<p style="color:var(--text-light);">Please log in to view your orders.</p>';
+      }
+      return;
+    }
+    
+    console.log('[Orders] Loading orders for authenticated user...');
+    const orders = await api.request('/orders/my-orders', { cacheBust: true });
+    console.log('[Orders] Orders loaded:', orders?.length || 0, orders);
     renderOrders(orders, forceRender);
     renderOrderSuccess(orders);
   } catch (err) {
-    console.error('Error loading orders:', err);
+    console.error('[Orders] Error loading orders:', err);
     if (listEl) {
-      if (err.message && err.message.includes('401')) {
-        listEl.innerHTML = '<p style="color:var(--text-light);">Orders are not available. Please contact support for order inquiries.</p>';
+      if (err.message && (err.message.includes('401') || err.message.includes('Unauthorized'))) {
+        listEl.innerHTML = '<p style="color:var(--text-light);">Please log in to view your orders. <a href="#" onclick="window.location.reload()" style="color:var(--primary);">Refresh</a></p>';
       } else {
-      listEl.innerHTML = `<p style="color:var(--danger);">Error loading orders: ${err.message}</p>`;
+        listEl.innerHTML = `<p style="color:var(--danger);">Error loading orders: ${err.message || 'Unknown error'}</p>`;
       }
     }
   }
