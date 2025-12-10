@@ -104,26 +104,52 @@ const renderMedia = (product, selectedColor = null) => {
 const uniqueValues = (key) => [...new Set(state.variants.map((variant) => variant[key]))];
 
 const populateSizes = () => {
-  const options = uniqueValues('size');
-  if (!options.length) {
-    sizeSelect.innerHTML = '<option disabled>No sizes</option>';
-    colorSelect.innerHTML = '<option disabled>N/A</option>';
+  // Check if we have variants at all
+  if (!state.variants || state.variants.length === 0) {
+    sizeSelect.innerHTML = '<option disabled>No variants available</option>';
+    colorSelect.innerHTML = '<option disabled>No variants available</option>';
     state.selectedSize = null;
     state.selectedColor = null;
+    holder.error.textContent = 'This product has no size/color variants. Please contact support.';
     return;
   }
-  sizeSelect.innerHTML = options.map((opt) => `<option value="${opt}">${opt}</option>`).join('');
-  state.selectedSize = options[0];
+  
+  const options = uniqueValues('size');
+  if (!options.length) {
+    sizeSelect.innerHTML = '<option disabled>No sizes available</option>';
+    colorSelect.innerHTML = '<option disabled>No colors available</option>';
+    state.selectedSize = null;
+    state.selectedColor = null;
+    holder.error.textContent = 'This product has no size options. Please contact support.';
+    return;
+  }
+  
+  sizeSelect.innerHTML = '<option value="">Select Size</option>' + 
+    options.map((opt) => `<option value="${opt}">${opt}</option>`).join('');
+  
+  // Auto-select first size if available
+  if (options.length > 0) {
+    sizeSelect.value = options[0];
+    state.selectedSize = options[0];
+  }
 };
 
 const populateColors = () => {
+  if (!state.selectedSize) {
+    colorSelect.innerHTML = '<option disabled>Select a size first</option>';
+    state.selectedColor = null;
+    return;
+  }
+  
   const colors = state.variants
     .filter((variant) => variant.size === state.selectedSize)
     .map((variant) => variant.color);
   const unique = [...new Set(colors)];
+  
   if (!unique.length) {
-    colorSelect.innerHTML = '<option disabled>No colors</option>';
+    colorSelect.innerHTML = '<option disabled>No colors available for this size</option>';
     state.selectedColor = null;
+    holder.error.textContent = 'No colors available for the selected size.';
     return;
   }
   
@@ -132,9 +158,15 @@ const populateColors = () => {
   const preSelectedColor = urlParams.get('color');
   const defaultColor = (preSelectedColor && unique.includes(preSelectedColor)) ? preSelectedColor : unique[0];
   
-  colorSelect.innerHTML = unique.map((color) => `<option value="${color}">${color}</option>`).join('');
+  colorSelect.innerHTML = '<option value="">Select Color</option>' + 
+    unique.map((color) => `<option value="${color}">${color}</option>`).join('');
   colorSelect.value = defaultColor;
   state.selectedColor = defaultColor;
+  
+  // Clear error if we successfully populated colors
+  if (holder.error && holder.error.textContent.includes('No colors')) {
+    holder.error.textContent = '';
+  }
 };
 
 const currentVariant = () =>
@@ -165,20 +197,34 @@ const loadProduct = async () => {
     
     state.product = product;
     state.variants = product.variants || [];
+    
+    console.log('[Product Detail] Product loaded:', {
+      productId: product.id,
+      title: product.title,
+      variantsCount: state.variants.length,
+      variants: state.variants
+    });
+    
     holder.title.textContent = product.title;
     holder.description.textContent = product.description || 'No description available';
     holder.category.textContent = product.category?.name || 'EdithCloths';
     
-    // Check if color is passed in URL params before populating dropdowns
-    const urlParams = new URLSearchParams(window.location.search);
-    const preSelectedColor = urlParams.get('color');
-    
-    populateSizes();
-    // populateColors() will check for preSelectedColor internally
-    populateColors();
-    
-    renderMedia(product, state.selectedColor);
-    updatePrice();
+    // Set default price from base_price if no variants
+    if (!state.variants || state.variants.length === 0) {
+      holder.price.textContent = formatCurrency(product.base_price || 0);
+      holder.error.textContent = 'This product has no size/color variants available. Please contact support.';
+    } else {
+      // Check if color is passed in URL params before populating dropdowns
+      const urlParams = new URLSearchParams(window.location.search);
+      const preSelectedColor = urlParams.get('color');
+      
+      populateSizes();
+      // populateColors() will check for preSelectedColor internally
+      populateColors();
+      
+      renderMedia(product, state.selectedColor);
+      updatePrice();
+    }
   } catch (err) {
     console.error('Product load error:', err);
     // User-friendly error message
@@ -187,18 +233,31 @@ const loadProduct = async () => {
 };
 
 sizeSelect?.addEventListener('change', (event) => {
-  state.selectedSize = event.target.value;
-  populateColors();
-  updatePrice();
+  state.selectedSize = event.target.value || null;
+  if (state.selectedSize) {
+    populateColors();
+    updatePrice();
+    // Clear error when valid size is selected
+    if (holder.error && holder.error.textContent.includes('Choose a valid')) {
+      holder.error.textContent = '';
+    }
+  } else {
+    colorSelect.innerHTML = '<option disabled>Select a size first</option>';
+    state.selectedColor = null;
+  }
 });
 
 colorSelect?.addEventListener('change', (event) => {
-  state.selectedColor = event.target.value;
+  state.selectedColor = event.target.value || null;
   // Update images when color changes
-  if (state.product) {
+  if (state.product && state.selectedColor) {
     renderMedia(state.product, state.selectedColor);
   }
   updatePrice();
+  // Clear error when valid color is selected
+  if (holder.error && holder.error.textContent.includes('Choose a valid')) {
+    holder.error.textContent = '';
+  }
 });
 
 document.getElementById('add-to-cart')?.addEventListener('click', async () => {
