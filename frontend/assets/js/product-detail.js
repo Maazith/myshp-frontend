@@ -152,8 +152,8 @@ const updatePrice = () => {
 const loadProduct = async () => {
   if (!productId) return;
   try {
-    // Use ID endpoint for product detail
-    const product = await api.request(`/products/id/${productId}/`);
+    // Use ID endpoint for product detail with cache-busting
+    const product = await api.request(`/products/id/${productId}/`, { cacheBust: true });
     state.product = product;
     state.variants = product.variants || [];
     holder.title.textContent = product.title;

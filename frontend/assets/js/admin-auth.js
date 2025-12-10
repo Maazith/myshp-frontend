@@ -104,6 +104,26 @@ const handleAdminLogin = () => {
   });
 };
 
+// Export adminAuth object for use in other modules
+export const adminAuth = {
+  requireAuth() {
+    // Check if user is authenticated
+    const token = localStorage.getItem('edithcloths_token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return false;
+    }
+    return true;
+  },
+  
+  clearAuth() {
+    // Clear all auth data
+    localStorage.removeItem('edithcloths_token');
+    localStorage.removeItem('edithcloths_refresh');
+    localStorage.removeItem('edithcloths_user');
+  }
+};
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   handleAdminLogin();

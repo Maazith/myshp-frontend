@@ -49,8 +49,17 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     }
     
     await adminApi.createProduct(formData);
-    window.location.href = 'products.html';
+    
+    // Show success message
+    errorEl.style.color = 'var(--success, #4CAF50)';
+    errorEl.textContent = '✅ Product created successfully! Redirecting...';
+    
+    // Redirect with success parameter
+    setTimeout(() => {
+      window.location.href = 'products.html?created=true';
+    }, 1500);
   } catch (error) {
+    errorEl.style.color = 'var(--danger)';
     errorEl.textContent = error.message;
   }
 });

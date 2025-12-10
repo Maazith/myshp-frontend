@@ -4,6 +4,21 @@ import { formatCurrency, getAbsoluteImageUrl } from './components.js';
 
 if (!adminAuth.requireAuth()) return;
 
+// Check for success message from URL
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('created') === 'true') {
+  const successMsg = document.getElementById('success-message');
+  if (successMsg) {
+    successMsg.style.display = 'block';
+    // Hide after 5 seconds
+    setTimeout(() => {
+      successMsg.style.display = 'none';
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }, 5000);
+  }
+}
+
 async function loadProducts() {
   try {
     const products = await adminApi.getProducts();

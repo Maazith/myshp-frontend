@@ -8,9 +8,13 @@ const fetchProducts = async () => {
   if (!container) return;
   try {
     // Build URL correctly - don't expand by color, show one product per item
-    const url = gender ? `/products/?gender=${gender}&expand_by_color=false` : '/products/?expand_by_color=false';
+    // Add cache-busting timestamp to ensure fresh data
+    const timestamp = `_t=${Date.now()}`;
+    const url = gender 
+      ? `/products/?gender=${gender}&expand_by_color=false&${timestamp}` 
+      : `/products/?expand_by_color=false&${timestamp}`;
     console.log('📦 Fetching products from:', url, 'Gender filter:', gender);
-    const data = await api.request(url);
+    const data = await api.request(url, { cacheBust: true });
     console.log('📦 Products received:', data);
     console.log('📦 Number of products:', data ? data.length : 0);
     

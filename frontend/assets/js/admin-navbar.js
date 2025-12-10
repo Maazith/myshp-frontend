@@ -62,12 +62,28 @@ export const mountAdminNavbar = () => {
   // Logout
   const logoutBtn = document.getElementById('admin-logout');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
+    logoutBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      import('./admin-auth.js').then(({ adminAuth }) => {
+      try {
+        // Import adminAuth to clear auth
+        const { adminAuth } = await import('./admin-auth.js');
         adminAuth.clearAuth();
-        window.location.href = '/admin/login.html';
-      });
+        
+        // Also clear via api.logout() for consistency
+        const { api } = await import('./api.js');
+        api.logout();
+        
+        // Redirect to login page
+        const currentPath = window.location.pathname;
+        const isInAdmin = currentPath.includes('/admin/') || currentPath.includes('admin/');
+        const loginPath = isInAdmin ? 'login.html' : '/admin/login.html';
+        window.location.href = loginPath;
+      } catch (error) {
+        console.error('Logout error:', error);
+        // Fallback: clear localStorage and redirect
+        localStorage.clear();
+        window.location.href = 'login.html';
+      }
     });
   }
 };
