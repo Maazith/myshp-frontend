@@ -205,24 +205,21 @@ export const mountFooter = async () => {
         <p>Customer Care</p>
         <a href="mailto:${supportEmail}">${supportEmail}</a>
       </div>
-      <p class="copyright" id="admin-trigger" style="cursor: pointer; user-select: none;">© ${new Date().getFullYear()} EdithCloths</p>
+      <p class="copyright" id="admin-trigger" style="cursor: pointer; user-select: none; transition: opacity 0.2s;">© ${new Date().getFullYear()} EdithCloths</p>
     </footer>
   `;
   
-  // Hidden admin trigger - double-click on copyright text
-  let clickCount = 0;
-  let clickTimer;
+  // Hidden admin trigger - click on copyright text (subtle, no button appearance)
   const trigger = document.getElementById('admin-trigger');
   if (trigger) {
+    trigger.addEventListener('mouseenter', () => {
+      trigger.style.opacity = '0.7';
+    });
+    trigger.addEventListener('mouseleave', () => {
+      trigger.style.opacity = '1';
+    });
     trigger.addEventListener('click', () => {
-      clickCount++;
-      clearTimeout(clickTimer);
-      clickTimer = setTimeout(() => {
-        if (clickCount === 2) {
-          window.location.href = '/admin/login.html';
-        }
-        clickCount = 0;
-      }, 300);
+      window.location.href = '/admin/login.html';
     });
   }
 };
