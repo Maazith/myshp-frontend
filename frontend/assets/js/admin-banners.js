@@ -2,13 +2,21 @@ import { adminApi } from './admin-api.js';
 import { adminAuth } from './admin-auth.js';
 import { mountAdminNavbar } from './admin-navbar.js';
 
-if (!adminAuth.requireAuth()) {
-  // Redirect handled
-}
+// Page-specific check - only run on banners page
+const isBannersPage = () => {
+  const path = window.location.pathname;
+  return path.includes('banners.html');
+};
 
-mountAdminNavbar();
+if (!isBannersPage()) {
+  console.warn('[Admin Banners] This script should only run on banners page');
+} else {
+  if (!adminAuth.requireAuth()) {
+    // Redirect handled
+  } else {
+    mountAdminNavbar();
 
-const loadBanners = async () => {
+    const loadBanners = async () => {
   try {
     const banners = await adminApi.getBanners();
     const container = document.getElementById('banners-list');
@@ -111,11 +119,14 @@ window.deleteBanner = async (id, name) => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadBanners();
-  
-  const form = document.getElementById('banner-form');
-  if (form) {
-    form.addEventListener('submit', handleSubmit);
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Admin Banners] Initializing banners page');
+      loadBanners();
+      
+      const form = document.getElementById('banner-form');
+      if (form) {
+        form.addEventListener('submit', handleSubmit);
+      }
+    });
   }
-});
+}

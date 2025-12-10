@@ -3,13 +3,21 @@ import { adminAuth } from './admin-auth.js';
 import { mountAdminNavbar } from './admin-navbar.js';
 import { formatCurrency } from './components.js';
 
-if (!adminAuth.requireAuth()) {
-  // Redirect handled
-}
+// Page-specific check - only run on products list page
+const isProductsPage = () => {
+  const path = window.location.pathname;
+  return path.includes('products.html') && !path.includes('product-add') && !path.includes('product-edit');
+};
 
-mountAdminNavbar();
+if (!isProductsPage()) {
+  console.warn('[Admin Products] This script should only run on products list page');
+} else {
+  if (!adminAuth.requireAuth()) {
+    // Redirect handled
+  } else {
+    mountAdminNavbar();
 
-const loadProducts = async () => {
+    const loadProducts = async () => {
   try {
     const products = await adminApi.getProducts();
     const container = document.getElementById('products-list');
@@ -65,6 +73,9 @@ window.deleteProduct = async (id, name) => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadProducts();
-});
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Admin Products] Initializing products list page');
+      loadProducts();
+    });
+  }
+}

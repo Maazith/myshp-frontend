@@ -3,11 +3,19 @@ import { adminAuth } from './admin-auth.js';
 import { mountAdminNavbar } from './admin-navbar.js';
 import { formatCurrency, orderStages } from './components.js';
 
-if (!adminAuth.requireAuth()) {
-  // Redirect handled
-}
+// Page-specific check - only run on order detail page
+const isOrderDetailPage = () => {
+  const path = window.location.pathname;
+  return path.includes('order-detail.html');
+};
 
-mountAdminNavbar();
+if (!isOrderDetailPage()) {
+  console.warn('[Admin Order Detail] This script should only run on order detail page');
+} else {
+  if (!adminAuth.requireAuth()) {
+    // Redirect handled
+  } else {
+    mountAdminNavbar();
 
 const getOrderId = () => {
   const params = new URLSearchParams(window.location.search);
@@ -194,6 +202,9 @@ window.markPaid = async () => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadOrderDetail();
-});
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Admin Order Detail] Initializing order detail page');
+      loadOrderDetail();
+    });
+  }
+}

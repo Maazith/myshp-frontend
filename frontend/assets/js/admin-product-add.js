@@ -2,11 +2,19 @@ import { adminApi } from './admin-api.js';
 import { adminAuth } from './admin-auth.js';
 import { mountAdminNavbar } from './admin-navbar.js';
 
-if (!adminAuth.requireAuth()) {
-  // Redirect handled
-}
+// Page-specific check - only run on product add page
+const isProductAddPage = () => {
+  const path = window.location.pathname;
+  return path.includes('product-add.html');
+};
 
-mountAdminNavbar();
+if (!isProductAddPage()) {
+  console.warn('[Admin Product Add] This script should only run on product add page');
+} else {
+  if (!adminAuth.requireAuth()) {
+    // Redirect handled
+  } else {
+    mountAdminNavbar();
 
 let variantCount = 0;
 const variants = [];
@@ -124,16 +132,19 @@ const handleSubmit = async (event) => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadCategories();
-  
-  const form = document.getElementById('product-form');
-  if (form) {
-    form.addEventListener('submit', handleSubmit);
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Admin Product Add] Initializing product add page');
+      loadCategories();
+      
+      const form = document.getElementById('product-form');
+      if (form) {
+        form.addEventListener('submit', handleSubmit);
+      }
+      
+      const addVariantBtn = document.getElementById('add-variant-btn');
+      if (addVariantBtn) {
+        addVariantBtn.addEventListener('click', addVariant);
+      }
+    });
   }
-  
-  const addVariantBtn = document.getElementById('add-variant-btn');
-  if (addVariantBtn) {
-    addVariantBtn.addEventListener('click', addVariant);
-  }
-});
+}

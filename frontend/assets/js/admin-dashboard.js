@@ -3,16 +3,25 @@ import { adminAuth } from './admin-auth.js';
 import { mountAdminNavbar } from './admin-navbar.js';
 import { formatCurrency } from './components.js';
 
-// Check authentication
-if (!adminAuth.requireAuth()) {
-  // Redirect handled by requireAuth
-}
+// Page-specific check - only run on dashboard page
+const isDashboardPage = () => {
+  const path = window.location.pathname;
+  return path.includes('dashboard.html') || path.endsWith('/admin/') || path.endsWith('/admin');
+};
 
-// Mount navbar
-mountAdminNavbar();
+if (!isDashboardPage()) {
+  console.warn('[Admin Dashboard] This script should only run on dashboard page');
+  // Don't execute if not on dashboard page
+} else {
+  // Check authentication
+  if (!adminAuth.requireAuth()) {
+    // Redirect handled by requireAuth
+  } else {
+    // Mount navbar
+    mountAdminNavbar();
 
-// Load dashboard data
-const loadDashboard = async () => {
+    // Load dashboard data
+    const loadDashboard = async () => {
   try {
     console.log('[Admin Dashboard] Loading dashboard data...');
     console.log('[Admin Dashboard] API Base URL:', adminApi.baseUrl);
@@ -50,7 +59,7 @@ const loadDashboard = async () => {
           <div class="stat-value">${pendingOrders}</div>
         </div>
         <div class="stat-card">
-          <h3>Delivered</h3>
+          <h3>Completed Orders</h3>
           <div class="stat-value">${deliveredOrders}</div>
         </div>
         <div class="stat-card">
@@ -90,7 +99,10 @@ const loadDashboard = async () => {
   }
 };
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  loadDashboard();
-});
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Admin Dashboard] Initializing dashboard page');
+      loadDashboard();
+    });
+  }
+}

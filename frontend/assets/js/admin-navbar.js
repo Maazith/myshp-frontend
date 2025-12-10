@@ -16,6 +16,7 @@ export const mountAdminNavbar = () => {
         <a href="/admin/dashboard.html" class="btn ghost small ${isActive('dashboard')}">Dashboard</a>
         <a href="/admin/orders.html" class="btn ghost small ${isActive('orders')}">Orders</a>
         <a href="/admin/products.html" class="btn ghost small ${isActive('products')}">Products</a>
+        <a href="/admin/categories.html" class="btn ghost small ${isActive('categories')}">Categories</a>
         <a href="/admin/banners.html" class="btn ghost small ${isActive('banners')}">Banners</a>
         <button class="btn small" id="admin-logout-btn">Logout</button>
       </div>

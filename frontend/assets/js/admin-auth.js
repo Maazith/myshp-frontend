@@ -5,9 +5,20 @@ export const adminAuth = {
   requireAuth() {
     const token = adminApi.accessToken;
     if (!token) {
+      console.warn('[Admin Auth] No token found, redirecting to login');
       window.location.href = '/admin/login.html';
       return false;
     }
+    
+    // Verify user is staff
+    const user = adminApi.currentUser();
+    if (!user || !user.is_staff) {
+      console.warn('[Admin Auth] User is not staff, clearing auth and redirecting');
+      adminApi.logout();
+      window.location.href = '/admin/login.html';
+      return false;
+    }
+    
     return true;
   },
   

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Categories | Admin | EdithCloths</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/admin-mobile.css" />
+    <script src="../admin-config.js"></script>
+    <script>
+      // Override for local development only
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        window.API_BASE_URL = 'http://127.0.0.1:8000/api';
+        window.BACKEND_BASE_URL = 'http://127.0.0.1:8000';
+      }
+    </script>
+  </head>
+  <body>
+    <header data-component="admin-navbar"></header>
+    <main>
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Categories</h2>
+        </div>
+        
+        <div class="form-card" style="max-width:600px;margin-bottom:3rem;">
+          <p class="badge" id="form-title">Add Category</p>
+          <form id="category-form" data-category-id="">
+            <div class="form-group">
+              <label for="category-name">Category Name *</label>
+              <input type="text" id="category-name" required placeholder="e.g., T-Shirts" />
+            </div>
+            
+            <div class="form-group">
+              <label for="category-description">Description</label>
+              <textarea id="category-description" rows="3" placeholder="Category description"></textarea>
+            </div>
+            
+            <button class="btn" type="submit">Create Category</button>
+            <p id="form-error" style="color:var(--danger);margin-top:1rem;min-height:1.5rem;"></p>
+          </form>
+        </div>
+        
+        <div>
+          <h3 style="margin-bottom:1rem;color:#FFFFFF;">Existing Categories</h3>
+          <div id="categories-list">
+            <p style="color:var(--text-light);text-align:center;padding:2rem;">Loading...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="../assets/js/admin-categories.js"></script>
+  </body>
+</html>
+

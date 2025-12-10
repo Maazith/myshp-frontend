@@ -3,13 +3,21 @@ import { adminAuth } from './admin-auth.js';
 import { mountAdminNavbar } from './admin-navbar.js';
 import { formatCurrency } from './components.js';
 
-if (!adminAuth.requireAuth()) {
-  // Redirect handled
-}
+// Page-specific check - only run on orders page
+const isOrdersPage = () => {
+  const path = window.location.pathname;
+  return path.includes('orders.html') && !path.includes('order-detail');
+};
 
-mountAdminNavbar();
+if (!isOrdersPage()) {
+  console.warn('[Admin Orders] This script should only run on orders list page');
+} else {
+  if (!adminAuth.requireAuth()) {
+    // Redirect handled
+  } else {
+    mountAdminNavbar();
 
-const loadOrders = async () => {
+    const loadOrders = async () => {
   try {
     const orders = await adminApi.getOrders();
     const container = document.getElementById('orders-list');
@@ -48,6 +56,9 @@ const loadOrders = async () => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadOrders();
-});
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Admin Orders] Initializing orders list page');
+      loadOrders();
+    });
+  }
+}
