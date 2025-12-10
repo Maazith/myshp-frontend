@@ -4,7 +4,7 @@
 // Backend API Configuration
 export const BACKEND_CONFIG = {
   // Production backend URL (Render deployment)
-  PRODUCTION_URL: 'https://api.edithcloths.com/api',
+  PRODUCTION_URL: 'https://myshp-backend.onrender.com/api',
   
   // Local development URL (for testing)
   LOCAL_URL: 'http://127.0.0.1:8000/api',

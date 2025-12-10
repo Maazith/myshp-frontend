@@ -32,8 +32,14 @@ const getApiBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
-  // Production fallback
-  return 'https://api.edithcloths.com/api';
+  // Production fallback - Try Render backend first, then custom domain
+  // Render backend URL (primary)
+  const RENDER_BACKEND = 'https://myshp-backend.onrender.com/api';
+  // Custom domain (if configured)
+  const CUSTOM_DOMAIN = 'https://api.edithcloths.com/api';
+  
+  // Prefer Render URL as it's more reliable
+  return RENDER_BACKEND;
 };
 
 export const api = {

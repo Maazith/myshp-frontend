@@ -9,8 +9,9 @@
         // Set API Base URL from environment variable (Vercel) or use production default
         // This allows Vercel to override the API URL via environment variables
         
-        // Production backend URL
-        const PRODUCTION_API_URL = 'https://api.edithcloths.com/api';
+        // Production backend URL - Use Render backend (more reliable)
+        const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
+        const CUSTOM_DOMAIN_API_URL = 'https://api.edithcloths.com/api'; // Fallback if custom domain configured
         const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
         
         // Determine which URL to use

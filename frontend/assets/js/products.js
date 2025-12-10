@@ -1,8 +1,22 @@
 import { api } from './api.js';
 import { createProductCard, initCarousels, mountNavbar, mountFooter } from './components.js';
+import { ConnectionResolver } from './connection-resolver.js';
 
 const container = document.getElementById('products-list');
 const gender = document.body.dataset.gender;
+
+// Auto-resolve backend connection on page load
+const resolveConnection = async () => {
+  try {
+    const resolver = new ConnectionResolver();
+    const result = await resolver.autoResolve();
+    if (!result.success) {
+      console.warn('⚠️ Backend connection issue:', result.message);
+    }
+  } catch (err) {
+    console.warn('⚠️ Connection resolver error:', err);
+  }
+};
 
 const fetchProducts = async () => {
   if (!container) return;
@@ -46,6 +60,8 @@ document.body.addEventListener('click', (event) => {
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
+  // Resolve backend connection first
+  await resolveConnection();
   await mountNavbar();
   await mountFooter();
   fetchProducts();

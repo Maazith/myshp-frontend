@@ -1,0 +1,7 @@
+# Command to delete all products and banners in Render Web Shell
+# Copy and paste this entire command:
+
+python manage.py shell -c "from shop.models import Product, Banner; products_count = Product.objects.count(); banners_count = Banner.objects.count(); Product.objects.all().delete(); Banner.objects.all().delete(); print(f'✅ Deleted {products_count} product(s) and {banners_count} banner(s)')"
+
+
+
