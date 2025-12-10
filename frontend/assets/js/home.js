@@ -108,19 +108,20 @@ const renderProducts = (items, container) => {
 
 const loadBanners = async () => {
   try {
-    const banners = await api.request('/banners/');
+    const banners = await api.request('/banners/').catch(() => []); // Return empty array on error
     renderBanners(banners || []);
   } catch (err) {
     console.error('Error loading banners:', err);
+    // Don't break the page if banners fail to load
   }
 };
 
 const bootstrapHome = async () => {
   try {
     const [banners, men, women] = await Promise.all([
-      api.request('/banners/'),
-      api.request('/products/?gender=MEN&expand_by_color=false'),
-      api.request('/products/?gender=WOMEN&expand_by_color=false'),
+      api.request('/banners/').catch(() => []), // Return empty array on error
+      api.request('/products/?gender=MEN&expand_by_color=false').catch(() => []), // Return empty array on error
+      api.request('/products/?gender=WOMEN&expand_by_color=false').catch(() => []), // Return empty array on error
     ]);
     renderBanners(banners || []);
     renderProducts(men || [], menWrapper);
@@ -130,7 +131,11 @@ const bootstrapHome = async () => {
     if (bannerPollInterval) clearInterval(bannerPollInterval);
     bannerPollInterval = setInterval(loadBanners, 5000);
   } catch (err) {
-    console.error(err);
+    console.error('Error loading homepage:', err);
+    // Gracefully handle errors - show empty states
+    renderBanners([]);
+    renderProducts([], menWrapper);
+    renderProducts([], womenWrapper);
   }
 };
 
