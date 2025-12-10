@@ -5,52 +5,6 @@ if (!adminAuth.requireAuth()) return;
 
 let variantCount = 0;
 
-async function loadCategories() {
-  try {
-    const categories = await adminApi.getCategories();
-    const select = document.getElementById('category');
-    select.innerHTML = '<option value="">Select Category</option>' + 
-      categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
-  } catch (error) {
-    console.error('Categories load error:', error);
-  }
-}
-
-// Create category functionality
-function setupCreateCategory() {
-  const categorySelect = document.getElementById('category');
-  const categoryGroup = categorySelect?.closest('.form-group');
-  
-  if (!categoryGroup) return;
-  
-  // Add "Create Category" button next to category select
-  const createBtn = document.createElement('button');
-  createBtn.type = 'button';
-  createBtn.className = 'btn ghost small';
-  createBtn.textContent = '+ Create Category';
-  createBtn.style.marginTop = '0.5rem';
-  createBtn.addEventListener('click', () => {
-    const name = prompt('Enter category name:');
-    if (name && name.trim()) {
-      createCategory(name.trim());
-    }
-  });
-  
-  categoryGroup.appendChild(createBtn);
-}
-
-async function createCategory(name) {
-  try {
-    const category = await adminApi.createCategory(name);
-    // Reload categories and select the new one
-    await loadCategories();
-    document.getElementById('category').value = category.id;
-    alert('Category created successfully!');
-  } catch (error) {
-    alert('Error creating category: ' + error.message);
-  }
-}
-
 function addVariant(variantData = null) {
   variantCount++;
   const size = variantData?.size || '';
@@ -156,7 +110,6 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     const formData = new FormData();
     formData.append('title', document.getElementById('title').value);
     formData.append('description', document.getElementById('description').value);
-    formData.append('category_id', document.getElementById('category').value);
     formData.append('gender', document.getElementById('gender').value);
     formData.append('base_price', document.getElementById('base-price').value);
     formData.append('is_active', document.getElementById('is-active').checked);
@@ -178,6 +131,4 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
 });
 
 // Initialize on page load
-loadCategories();
-setupCreateCategory();
 

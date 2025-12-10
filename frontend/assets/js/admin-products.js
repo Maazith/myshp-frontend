@@ -4,55 +4,6 @@ import { formatCurrency, getAbsoluteImageUrl } from './components.js';
 
 if (!adminAuth.requireAuth()) return;
 
-// Category modal functionality
-const categoryModal = document.getElementById('category-modal');
-const createCategoryBtn = document.getElementById('create-category-btn');
-const closeCategoryModal = document.getElementById('close-category-modal');
-const categoryForm = document.getElementById('category-form');
-
-createCategoryBtn?.addEventListener('click', () => {
-  categoryModal.style.display = 'flex';
-});
-
-closeCategoryModal?.addEventListener('click', () => {
-  categoryModal.style.display = 'none';
-  categoryForm.reset();
-  document.getElementById('category-error').textContent = '';
-});
-
-categoryModal?.addEventListener('click', (e) => {
-  if (e.target === categoryModal) {
-    categoryModal.style.display = 'none';
-    categoryForm.reset();
-    document.getElementById('category-error').textContent = '';
-  }
-});
-
-categoryForm?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const errorEl = document.getElementById('category-error');
-  errorEl.textContent = '';
-  
-  try {
-    const name = document.getElementById('category-name').value.trim();
-    const description = document.getElementById('category-description').value.trim();
-    
-    if (!name) {
-      errorEl.textContent = 'Category name is required';
-      return;
-    }
-    
-    await adminApi.createCategory(name, description);
-    categoryModal.style.display = 'none';
-    categoryForm.reset();
-    alert('Category created successfully!');
-    // Reload page to refresh category list
-    window.location.reload();
-  } catch (error) {
-    errorEl.textContent = error.message || 'Failed to create category';
-  }
-});
-
 async function loadProducts() {
   try {
     const products = await adminApi.getProducts();
@@ -71,7 +22,6 @@ async function loadProducts() {
           <img src="${imageUrl}" alt="${product.title}" style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius);">
           <div>
             <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">${product.title}</p>
-            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.25rem;">${product.category?.name || 'No category'}</p>
             <p style="color: var(--text-light); font-size: 0.9rem;">${product.gender} • ${formatCurrency(product.base_price)}</p>
           </div>
           <div style="display: flex; gap: 0.5rem;">

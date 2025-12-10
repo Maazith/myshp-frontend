@@ -30,7 +30,6 @@ async function loadProduct() {
     
     document.getElementById('title').value = product.title || '';
     document.getElementById('description').value = product.description || '';
-    document.getElementById('category').value = product.category?.id || '';
     document.getElementById('gender').value = product.gender || 'M';
     document.getElementById('base-price').value = product.base_price || 0;
     document.getElementById('is-active').checked = product.is_active !== false;
@@ -128,7 +127,6 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     const formData = new FormData();
     formData.append('title', document.getElementById('title').value);
     formData.append('description', document.getElementById('description').value);
-    formData.append('category_id', document.getElementById('category').value);
     formData.append('gender', document.getElementById('gender').value);
     formData.append('base_price', document.getElementById('base-price').value);
     formData.append('is_active', document.getElementById('is-active').checked);
@@ -149,6 +147,5 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
   }
 });
 
-loadCategories();
 loadProduct();
 
