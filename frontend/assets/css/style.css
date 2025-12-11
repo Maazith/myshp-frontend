@@ -50,7 +50,7 @@ body::after {
   height: 100%;
   background-image: url('../images/logo.jpg');
   background-position: center center;
-  background-size: 600px auto;
+  background-size: 90% auto;
   background-repeat: no-repeat;
   opacity: 0.15;
   z-index: -1;
@@ -1063,7 +1063,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile (768px and below) */
 @media (max-width: 768px) {
   body::after {
-    background-size: 300px auto;
+    background-size: 100% auto;
   }
   
   main {
@@ -1360,7 +1360,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Extra Small Mobile (480px and below) */
 @media (max-width: 480px) {
   body::after {
-    background-size: 200px auto;
+    background-size: 100% auto;
   }
   
   main {
