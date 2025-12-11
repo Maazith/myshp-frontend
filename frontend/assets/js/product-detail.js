@@ -314,6 +314,11 @@ const loadProduct = async () => {
       
       renderMedia(product, state.selectedColor);
       updatePrice();
+      
+      // Initialize quantity display
+      if (quantityValueDisplay && quantityInput) {
+        quantityValueDisplay.textContent = quantityInput.value;
+      }
     }
   } catch (err) {
     console.error('Product load error:', err);
