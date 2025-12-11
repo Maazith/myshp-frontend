@@ -28,8 +28,15 @@
             <select id="color-select"></select>
           </div>
           <div class="form-group">
-            <label for="quantity">Quantity</label>
-            <input id="quantity" type="number" min="1" max="5" value="1" />
+            <label for="quantity">Quantity: <span id="quantity-value">1</span></label>
+            <input id="quantity" type="range" min="1" max="5" value="1" step="1" />
+            <div class="quantity-labels" style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-light);">
+              <span>1</span>
+              <span>2</span>
+              <span>3</span>
+              <span>4</span>
+              <span>5</span>
+            </div>
           </div>
           <button class="btn" id="add-to-cart">Add to Cart</button>
           <p id="detail-error" style="color:var(--danger);margin-top:1rem"></p>

@@ -14,6 +14,7 @@ const state = {
 const sizeSelect = document.getElementById('size-select');
 const colorSelect = document.getElementById('color-select');
 const quantityInput = document.getElementById('quantity');
+const quantityValueDisplay = document.getElementById('quantity-value');
 const holder = {
   title: document.getElementById('product-title'),
   description: document.getElementById('product-description'),
@@ -350,31 +351,22 @@ colorSelect?.addEventListener('change', (event) => {
   }
 });
 
-// Validate quantity input to ensure maximum of 5
+// Update quantity value display when slider changes
 quantityInput?.addEventListener('input', (event) => {
   const value = Number(event.target.value);
-  if (value > 5) {
-    event.target.value = 5;
-    holder.error.style.color = 'var(--danger)';
-    holder.error.textContent = 'Maximum quantity allowed is 5.';
-  } else if (value < 1) {
-    event.target.value = 1;
-  } else {
-    // Clear error if quantity is valid
-    if (holder.error && holder.error.textContent.includes('Maximum quantity')) {
-      holder.error.textContent = '';
-    }
+  if (quantityValueDisplay) {
+    quantityValueDisplay.textContent = value;
+  }
+  // Clear any quantity-related errors
+  if (holder.error && holder.error.textContent.includes('Maximum quantity')) {
+    holder.error.textContent = '';
   }
 });
 
 quantityInput?.addEventListener('change', (event) => {
   const value = Number(event.target.value);
-  if (value > 5) {
-    event.target.value = 5;
-    holder.error.style.color = 'var(--danger)';
-    holder.error.textContent = 'Maximum quantity allowed is 5.';
-  } else if (value < 1 || isNaN(value) || value === '') {
-    event.target.value = 1;
+  if (quantityValueDisplay) {
+    quantityValueDisplay.textContent = value;
   }
 });
 
