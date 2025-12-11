@@ -8,6 +8,8 @@ const errorEl = document.getElementById('checkout-error');
 // Check authentication on page load
 const checkAuth = async () => {
   if (!api.isAuthenticated) {
+    // Save intended destination in localStorage - after login, stay on checkout
+    localStorage.setItem('returnUrl', 'checkout.html');
     // Redirect to login with return URL
     const currentUrl = window.location.href;
     const backendBaseUrl = api.baseUrl.replace('/api', '');
@@ -62,6 +64,8 @@ form?.addEventListener('submit', async (event) => {
   
   // Check authentication before submitting
   if (!api.isAuthenticated) {
+    // Save intended destination in localStorage - after login, stay on checkout
+    localStorage.setItem('returnUrl', 'checkout.html');
     const currentUrl = window.location.href;
     const backendBaseUrl = api.baseUrl.replace('/api', '');
     window.location.href = `${backendBaseUrl}/login/?next=${encodeURIComponent(currentUrl)}`;
@@ -167,16 +171,56 @@ const extractTokensFromUrl = () => {
     localStorage.setItem('edithcloths_token', token);
     localStorage.setItem('edithcloths_refresh', refresh);
     
+    // Helper to handle redirect after tokens are stored
+    const handleRedirect = () => {
+      const returnUrl = localStorage.getItem('returnUrl');
+      if (returnUrl) {
+        localStorage.removeItem('returnUrl');
+        // Remove tokens from URL
+        const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
+        window.history.replaceState({}, '', newUrl);
+        
+        // Get current page name for comparison
+        const currentPage = window.location.pathname.split('/').pop() || '';
+        const currentPath = window.location.pathname;
+        
+        // Normalize returnUrl - if it's just a filename, it should match the current page filename
+        // If returnUrl is different from current page, redirect
+        if (returnUrl !== currentPage && !currentPath.includes(returnUrl.replace('.html', ''))) {
+          // Small delay to ensure tokens are stored
+          setTimeout(() => {
+            window.location.href = returnUrl;
+          }, 100);
+        }
+      } else {
+        // No returnUrl, just remove tokens from URL
+        const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
+        window.history.replaceState({}, '', newUrl);
+      }
+    };
+    
     // Get user info from API
     api.request('/auth/me').then(user => {
       localStorage.setItem('edithcloths_user', JSON.stringify(user));
+      handleRedirect();
     }).catch(() => {
-      // Ignore errors
+      // Ignore errors, but still handle redirect
+      handleRedirect();
     });
-    
-    // Remove tokens from URL
-    const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
-    window.history.replaceState({}, '', newUrl);
+  } else {
+    // No tokens in URL, but check if we have returnUrl and are authenticated
+    // This handles the case where tokens were already extracted on a previous page load
+    const returnUrl = localStorage.getItem('returnUrl');
+    if (returnUrl && api.isAuthenticated) {
+      const currentPage = window.location.pathname.split('/').pop() || '';
+      if (returnUrl !== currentPage && returnUrl !== window.location.pathname) {
+        localStorage.removeItem('returnUrl');
+        window.location.href = returnUrl;
+      } else {
+        // Already on target page, just remove returnUrl
+        localStorage.removeItem('returnUrl');
+      }
+    }
   }
 };
 

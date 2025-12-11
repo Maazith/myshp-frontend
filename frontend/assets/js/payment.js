@@ -25,7 +25,7 @@ const hydratePage = async () => {
   // Load site settings for UPI ID and QR code
   try {
     const settings = await api.getSettings();
-    const upiId = settings?.upi_id || 'maazith.md@oksbi';
+    const upiId = settings?.upi_id || 'rsudhan886@okicici';
     
     // Update UPI ID display
     if (upiIdEl) {
@@ -75,10 +75,10 @@ const hydratePage = async () => {
       qrEl.style.borderRadius = 'var(--radius)';
     }
     if (upiIdEl) {
-      upiIdEl.textContent = 'UPI ID: maazith.md@oksbi';
+      upiIdEl.textContent = 'UPI ID: rsudhan886@okicici';
     }
     if (upiLink) {
-      upiLink.href = `upi://pay?pa=maazith.md@oksbi&pn=EdithCloths&am=${amount}&cu=INR`;
+      upiLink.href = `upi://pay?pa=rsudhan886@okicici&pn=EdithCloths&am=${amount}&cu=INR`;
     }
   }
 };

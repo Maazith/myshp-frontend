@@ -152,6 +152,8 @@ itemsContainer?.addEventListener('click', async (event) => {
 checkoutBtn?.addEventListener('click', () => {
   // Check authentication before going to checkout
   if (!api.isAuthenticated) {
+    // Save intended destination in localStorage - after login, go to checkout
+    localStorage.setItem('returnUrl', 'checkout.html');
     // Redirect to login with return URL to checkout
     const checkoutUrl = window.location.origin + window.location.pathname.replace('cart.html', 'checkout.html');
     const backendBaseUrl = api.baseUrl.replace('/api', '');
@@ -161,4 +163,52 @@ checkoutBtn?.addEventListener('click', () => {
   window.location.href = 'checkout.html';
 });
 
-window.addEventListener('DOMContentLoaded', loadCart);
+// Extract JWT tokens from URL parameters (after Django login redirect)
+// and handle redirect to intended page
+const extractTokensAndRedirect = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  const refresh = urlParams.get('refresh');
+  
+  if (token && refresh) {
+    // Store tokens in localStorage
+    localStorage.setItem('edithcloths_token', token);
+    localStorage.setItem('edithcloths_refresh', refresh);
+    
+    // Get user info from API
+    api.request('/auth/me').then(user => {
+      localStorage.setItem('edithcloths_user', JSON.stringify(user));
+    }).catch(() => {
+      // Ignore errors
+    });
+    
+    // Check for returnUrl in localStorage and redirect
+    const returnUrl = localStorage.getItem('returnUrl');
+    if (returnUrl) {
+      localStorage.removeItem('returnUrl');
+      // Remove tokens from URL before redirecting
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
+      window.history.replaceState({}, '', newUrl);
+      // Redirect to intended page
+      setTimeout(() => {
+        window.location.href = returnUrl;
+      }, 100);
+      return true; // Indicate that redirect is happening
+    } else {
+      // No returnUrl, just remove tokens from URL
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }
+  return false;
+};
+
+// Extract tokens immediately (before DOMContentLoaded)
+extractTokensAndRedirect();
+
+window.addEventListener('DOMContentLoaded', () => {
+  // If we're redirecting, don't load cart
+  if (!extractTokensAndRedirect()) {
+    loadCart();
+  }
+});

@@ -326,9 +326,39 @@ colorSelect?.addEventListener('change', (event) => {
   }
 });
 
+// Validate quantity input to ensure maximum of 5
+quantityInput?.addEventListener('input', (event) => {
+  const value = Number(event.target.value);
+  if (value > 5) {
+    event.target.value = 5;
+    holder.error.style.color = 'var(--danger)';
+    holder.error.textContent = 'Maximum quantity allowed is 5.';
+  } else if (value < 1) {
+    event.target.value = 1;
+  } else {
+    // Clear error if quantity is valid
+    if (holder.error && holder.error.textContent.includes('Maximum quantity')) {
+      holder.error.textContent = '';
+    }
+  }
+});
+
+quantityInput?.addEventListener('change', (event) => {
+  const value = Number(event.target.value);
+  if (value > 5) {
+    event.target.value = 5;
+    holder.error.style.color = 'var(--danger)';
+    holder.error.textContent = 'Maximum quantity allowed is 5.';
+  } else if (value < 1 || isNaN(value) || value === '') {
+    event.target.value = 1;
+  }
+});
+
 document.getElementById('add-to-cart')?.addEventListener('click', async () => {
   // Check if user is authenticated - require login to add to cart
   if (!api.isAuthenticated) {
+    // Save intended destination in localStorage - after adding to cart, go to cart page
+    localStorage.setItem('returnUrl', 'cart.html');
     // Redirect to login page with return URL to come back to this product page
     const currentUrl = window.location.href;
     const backendBaseUrl = api.baseUrl.replace('/api', '');
@@ -339,6 +369,20 @@ document.getElementById('add-to-cart')?.addEventListener('click', async () => {
   const variant = currentVariant();
   if (!variant) {
     holder.error.textContent = 'Choose a valid variant.';
+    return;
+  }
+  
+  // Validate quantity - maximum 5
+  const quantity = Number(quantityInput.value) || 1;
+  if (quantity < 1) {
+    holder.error.style.color = 'var(--danger)';
+    holder.error.textContent = 'Quantity must be at least 1.';
+    return;
+  }
+  if (quantity > 5) {
+    holder.error.style.color = 'var(--danger)';
+    holder.error.textContent = 'Maximum quantity allowed is 5.';
+    quantityInput.value = 5;
     return;
   }
   
@@ -353,7 +397,7 @@ document.getElementById('add-to-cart')?.addEventListener('click', async () => {
     
     console.log('[Product Detail] Adding to cart:', {
       variantId: variant.id,
-      quantity: Number(quantityInput.value) || 1,
+      quantity: quantity,
       variant: variant
     });
     
@@ -361,7 +405,7 @@ document.getElementById('add-to-cart')?.addEventListener('click', async () => {
       method: 'POST',
       body: {
         variant_id: variant.id,
-        quantity: Number(quantityInput.value) || 1,
+        quantity: quantity,
       },
     });
     
@@ -390,5 +434,53 @@ document.getElementById('add-to-cart')?.addEventListener('click', async () => {
   }
 });
 
-window.addEventListener('DOMContentLoaded', loadProduct);
+// Extract JWT tokens from URL parameters (after Django login redirect)
+// and handle redirect to intended page
+const extractTokensAndRedirect = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  const refresh = urlParams.get('refresh');
+  
+  if (token && refresh) {
+    // Store tokens in localStorage
+    localStorage.setItem('edithcloths_token', token);
+    localStorage.setItem('edithcloths_refresh', refresh);
+    
+    // Get user info from API
+    api.request('/auth/me').then(user => {
+      localStorage.setItem('edithcloths_user', JSON.stringify(user));
+    }).catch(() => {
+      // Ignore errors
+    });
+    
+    // Check for returnUrl in localStorage and redirect
+    const returnUrl = localStorage.getItem('returnUrl');
+    if (returnUrl) {
+      localStorage.removeItem('returnUrl');
+      // Remove tokens from URL before redirecting
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
+      window.history.replaceState({}, '', newUrl);
+      // Redirect to intended page
+      setTimeout(() => {
+        window.location.href = returnUrl;
+      }, 100);
+      return true; // Indicate that redirect is happening
+    } else {
+      // No returnUrl, just remove tokens from URL
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }
+  return false;
+};
+
+// Extract tokens immediately (before DOMContentLoaded)
+extractTokensAndRedirect();
+
+window.addEventListener('DOMContentLoaded', () => {
+  // If we're redirecting, don't load product
+  if (!extractTokensAndRedirect()) {
+    loadProduct();
+  }
+});
 
