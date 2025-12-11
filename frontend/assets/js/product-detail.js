@@ -60,14 +60,18 @@ const renderMedia = (product, selectedColor = null) => {
     // Find variant with selected color
     const colorVariant = state.variants.find(v => v.color === selectedColor);
     if (colorVariant && colorVariant.images && colorVariant.images.length > 0) {
-      imagesToShow = colorVariant.images.map(img => getAbsoluteImageUrl(img.image_url || img.image));
+      // Sort by display_order
+      const sortedImages = [...colorVariant.images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      imagesToShow = sortedImages.map(img => getAbsoluteImageUrl(img.image_url || img.image));
     }
   }
   
   // Fallback to product images or hero image
   if (imagesToShow.length === 0) {
     if (product.images && product.images.length > 0) {
-      imagesToShow = product.images.map(img => getAbsoluteImageUrl(img.image_url || img.image));
+      // Sort by display_order
+      const sortedImages = [...product.images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      imagesToShow = sortedImages.map(img => getAbsoluteImageUrl(img.image_url || img.image));
     } else if (product.hero_media_url || product.hero_media) {
       imagesToShow = [getAbsoluteImageUrl(product.hero_media_url || product.hero_media)];
     } else {
@@ -78,27 +82,88 @@ const renderMedia = (product, selectedColor = null) => {
   // Filter out null values
   imagesToShow = imagesToShow.filter(url => url);
   
-  // Render image gallery
+  // Store current image index
+  if (!window.currentImageIndex) {
+    window.currentImageIndex = 0;
+  }
+  
+  // Render image gallery with carousel
   if (imagesToShow.length === 1) {
     holder.media.innerHTML = `
       <img src="${imagesToShow[0]}" alt="${product.title}" style="width:100%;border-radius:var(--radius);object-fit:cover;" onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
     `;
   } else {
-    // Multiple images - show gallery
+    // Multiple images - show gallery with carousel
     holder.media.innerHTML = `
       <div style="position:relative;">
-        <img id="main-product-image" src="${imagesToShow[0]}" alt="${product.title}" style="width:100%;border-radius:var(--radius);object-fit:cover;margin-bottom:1rem;" onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <div style="position:relative;width:100%;margin-bottom:1rem;">
+          <img id="main-product-image" src="${imagesToShow[window.currentImageIndex]}" alt="${product.title}" style="width:100%;border-radius:var(--radius);object-fit:cover;aspect-ratio:1/1;background:var(--light-grey);" onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
+          ${imagesToShow.length > 1 ? `
+            <button id="prev-image-btn" onclick="changeImage(-1)" style="position:absolute;left:0.5rem;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;z-index:2;">‹</button>
+            <button id="next-image-btn" onclick="changeImage(1)" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;z-index:2;">›</button>
+          ` : ''}
+        </div>
+        <div id="thumbnail-container" style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;overflow-x:auto;padding:0.5rem 0;">
           ${imagesToShow.map((img, idx) => `
             <img src="${img}" alt="${product.title} - Image ${idx + 1}" 
-                 style="width:80px;height:80px;border-radius:var(--radius);object-fit:cover;cursor:pointer;border:2px solid ${idx === 0 ? 'var(--light-grey)' : 'transparent'};"
-                 onclick="document.getElementById('main-product-image').src='${img}'"
+                 class="thumbnail-image"
+                 data-index="${idx}"
+                 style="width:80px;height:80px;border-radius:var(--radius);object-fit:cover;cursor:pointer;border:2px solid ${idx === window.currentImageIndex ? 'var(--white)' : 'transparent'};opacity:${idx === window.currentImageIndex ? '1' : '0.7'};transition:all 0.2s ease;"
+                 onclick="selectImage(${idx})"
                  onerror="this.src='../assets/img/placeholder.jpg'" loading="lazy" />
           `).join('')}
         </div>
       </div>
     `;
+    
+    // Store images array globally for navigation
+    window.productImages = imagesToShow;
   }
+};
+
+// Image navigation functions
+window.changeImage = (direction) => {
+  if (!window.productImages || window.productImages.length === 0) return;
+  
+  window.currentImageIndex = (window.currentImageIndex + direction + window.productImages.length) % window.productImages.length;
+  
+  const mainImg = document.getElementById('main-product-image');
+  if (mainImg) {
+    mainImg.src = window.productImages[window.currentImageIndex];
+  }
+  
+  // Update thumbnail selection
+  document.querySelectorAll('.thumbnail-image').forEach((thumb, idx) => {
+    if (idx === window.currentImageIndex) {
+      thumb.style.border = '2px solid var(--white)';
+      thumb.style.opacity = '1';
+    } else {
+      thumb.style.border = '2px solid transparent';
+      thumb.style.opacity = '0.7';
+    }
+  });
+};
+
+window.selectImage = (index) => {
+  if (!window.productImages || index < 0 || index >= window.productImages.length) return;
+  
+  window.currentImageIndex = index;
+  
+  const mainImg = document.getElementById('main-product-image');
+  if (mainImg) {
+    mainImg.src = window.productImages[index];
+  }
+  
+  // Update thumbnail selection
+  document.querySelectorAll('.thumbnail-image').forEach((thumb, idx) => {
+    if (idx === index) {
+      thumb.style.border = '2px solid var(--white)';
+      thumb.style.opacity = '1';
+    } else {
+      thumb.style.border = '2px solid transparent';
+      thumb.style.opacity = '0.7';
+    }
+  });
 };
 
 const uniqueValues = (key) => [...new Set(state.variants.map((variant) => variant[key]))];
@@ -249,7 +314,8 @@ sizeSelect?.addEventListener('change', (event) => {
 
 colorSelect?.addEventListener('change', (event) => {
   state.selectedColor = event.target.value || null;
-  // Update images when color changes
+  // Update images when color changes - reset to first image
+  window.currentImageIndex = 0;
   if (state.product && state.selectedColor) {
     renderMedia(state.product, state.selectedColor);
   }

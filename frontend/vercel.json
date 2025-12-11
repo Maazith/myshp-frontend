@@ -15,6 +15,14 @@
     {
       "source": "/admin/(.*)",
       "destination": "/admin/$1"
+    },
+    {
+      "source": "/favicon.jpg",
+      "destination": "/public/favicon.jpg"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/public/favicon.jpg"
     }
   ],
   "headers": [

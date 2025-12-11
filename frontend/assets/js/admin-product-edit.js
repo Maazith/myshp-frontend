@@ -22,6 +22,8 @@ const getProductId = () => {
 };
 
 let variantCount = 0;
+let imageCount = 0;
+const productImages = []; // Array of { id (existing), file (new), preview, image_url }
 
 const loadCategories = async () => {
   try {
@@ -78,6 +80,21 @@ const loadProduct = async () => {
           color: variant.color,
           stock: variant.stock || 0,
           price: variant.price_override || null,
+        });
+      });
+    }
+    
+    // Load product images
+    const imagesContainer = document.getElementById('images-container');
+    if (imagesContainer && product.images && product.images.length > 0) {
+      imagesContainer.innerHTML = '';
+      // Sort by display_order
+      const sortedImages = [...product.images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      sortedImages.forEach((image) => {
+        addImageInput({
+          id: image.id,
+          image_url: image.image_url,
+          display_order: image.display_order || 0
         });
       });
     }
@@ -158,6 +175,90 @@ window.removeVariant = (id) => {
   }
 };
 
+const addImageInput = (existingImage = null) => {
+  imageCount++;
+  const container = document.getElementById('images-container');
+  if (!container) return;
+  
+  const imageId = existingImage ? `existing_image_${existingImage.id}` : `image_${imageCount}`;
+  const isExisting = !!existingImage;
+  
+  const imageHtml = `
+    <div class="form-card" data-image-id="${imageId}" data-image-db-id="${existingImage?.id || ''}" style="margin-top:1rem;position:relative;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <p class="badge">Image ${imageCount}${isExisting ? ' (Existing)' : ''}</p>
+        <button type="button" class="btn small ghost" onclick="removeImage('${imageId}', ${existingImage?.id || 'null'})">Remove</button>
+      </div>
+      ${isExisting ? `
+        <div class="form-group">
+          <label>Current Image</label>
+          <img src="${existingImage.image_url}" alt="Current" style="max-width:200px;max-height:200px;border-radius:var(--radius);object-fit:cover;border:2px solid var(--light-grey);display:block;" />
+        </div>
+      ` : ''}
+      <div class="form-group">
+        <label>${isExisting ? 'Replace Image (leave empty to keep current)' : 'Image File *'}</label>
+        <input type="file" name="${imageId}" accept="image/*" onchange="handleImagePreview('${imageId}', this)" ${isExisting ? '' : 'required'} />
+        <div id="preview-${imageId}" style="margin-top:0.5rem;"></div>
+      </div>
+      <div class="form-group" style="display:none;">
+        <label>Display Order</label>
+        <input type="number" name="${imageId}_order" value="${existingImage?.display_order || imageCount - 1}" min="0" />
+      </div>
+    </div>
+  `;
+  
+  container.insertAdjacentHTML('beforeend', imageHtml);
+  
+  if (existingImage) {
+    productImages.push({ id: imageId, dbId: existingImage.id, file: null, preview: existingImage.image_url, image_url: existingImage.image_url });
+  }
+};
+
+window.removeImage = (imageId, dbId) => {
+  const imageEl = document.querySelector(`[data-image-id="${imageId}"]`);
+  if (imageEl) {
+    // If it's an existing image, mark it for deletion
+    if (dbId) {
+      const index = productImages.findIndex(img => img.dbId === dbId);
+      if (index !== -1) {
+        productImages[index].markedForDeletion = true;
+      }
+    } else {
+      // Remove from productImages array if it's a new image
+      const index = productImages.findIndex(img => img.id === imageId);
+      if (index !== -1) {
+        productImages.splice(index, 1);
+      }
+    }
+    imageEl.remove();
+  }
+};
+
+window.handleImagePreview = (imageId, input) => {
+  const file = input.files[0];
+  if (!file) return;
+  
+  const previewDiv = document.getElementById(`preview-${imageId}`);
+  if (!previewDiv) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewDiv.innerHTML = `
+      <img src="${e.target.result}" alt="Preview" style="max-width:200px;max-height:200px;border-radius:var(--radius);object-fit:cover;border:2px solid var(--light-grey);" />
+    `;
+  };
+  reader.readAsDataURL(file);
+  
+  // Update productImages array
+  const existingIndex = productImages.findIndex(img => img.id === imageId);
+  if (existingIndex !== -1) {
+    productImages[existingIndex].file = file;
+    productImages[existingIndex].preview = reader.result;
+  } else {
+    productImages.push({ id: imageId, file, preview: reader.result });
+  }
+};
+
 const handleSubmit = async (event) => {
   event.preventDefault();
   const form = event.target;
@@ -194,12 +295,61 @@ const handleSubmit = async (event) => {
     
     formData.variants = variantsData;
     
+    // Collect images to delete
+    const imagesToDelete = productImages.filter(img => img.markedForDeletion && img.dbId).map(img => img.dbId);
+    if (imagesToDelete.length > 0) {
+      formData.image_ids_to_delete = imagesToDelete;
+    }
+    
+    // Collect new product images
+    const imageInputs = document.querySelectorAll('[data-image-id] input[type="file"]');
+    const imagesToUpload = [];
+    imageInputs.forEach(input => {
+      if (input.files && input.files[0]) {
+        imagesToUpload.push(input.files[0]);
+      }
+    });
+    
+    // Build FormData for multipart upload
+    const formDataToSend = new FormData();
+    
+    // Add basic fields
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description || '');
+    if (formData.category) {
+      formDataToSend.append('category_id', formData.category);
+    }
+    formDataToSend.append('gender', formData.gender);
+    formDataToSend.append('base_price', formData.base_price);
+    formDataToSend.append('is_active', formData.is_active ? 'true' : 'false');
+    formDataToSend.append('is_featured', formData.is_featured ? 'true' : 'false');
+    
+    // Add variants
+    if (formData.variants && formData.variants.length > 0) {
+      formDataToSend.append('variants', JSON.stringify(formData.variants));
+    }
+    
+    // Add hero_media if provided
+    if (formData.hero_media) {
+      formDataToSend.append('hero_media', formData.hero_media);
+    }
+    
+    // Add image deletions
+    if (imagesToDelete.length > 0) {
+      formDataToSend.append('image_ids_to_delete', JSON.stringify(imagesToDelete));
+    }
+    
+    // Add new product images
+    imagesToUpload.forEach((file, idx) => {
+      formDataToSend.append(`product_image_${idx}`, file);
+    });
+    
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Updating...';
     }
     
-    await adminApi.updateProduct(productId, formData);
+    await adminApi.updateProduct(productId, formDataToSend);
     
     alert('Product updated successfully!');
     window.location.href = '/admin/products.html';
@@ -237,6 +387,11 @@ const handleSubmit = async (event) => {
       const addVariantBtn = document.getElementById('add-variant-btn');
       if (addVariantBtn) {
         addVariantBtn.addEventListener('click', addVariant);
+      }
+      
+      const addImageBtn = document.getElementById('add-image-btn');
+      if (addImageBtn) {
+        addImageBtn.addEventListener('click', () => addImageInput());
       }
     });
   }

@@ -18,6 +18,8 @@ if (!isProductAddPage()) {
 
 let variantCount = 0;
 const variants = [];
+let imageCount = 0;
+const productImages = []; // Array of { file, preview, id (if existing) }
 
 const loadCategories = async () => {
   try {
@@ -95,6 +97,69 @@ window.removeVariant = (id) => {
   }
 };
 
+const addImageInput = () => {
+  imageCount++;
+  const container = document.getElementById('images-container');
+  if (!container) return;
+  
+  const imageId = `image_${imageCount}`;
+  const imageHtml = `
+    <div class="form-card" data-image-id="${imageId}" style="margin-top:1rem;position:relative;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <p class="badge">Image ${imageCount}</p>
+        <button type="button" class="btn small ghost" onclick="removeImage('${imageId}')">Remove</button>
+      </div>
+      <div class="form-group">
+        <label>Image File *</label>
+        <input type="file" name="${imageId}" accept="image/*" onchange="handleImagePreview('${imageId}', this)" />
+        <div id="preview-${imageId}" style="margin-top:0.5rem;"></div>
+      </div>
+      <div class="form-group" style="display:none;">
+        <label>Display Order</label>
+        <input type="number" name="${imageId}_order" value="${imageCount - 1}" min="0" />
+      </div>
+    </div>
+  `;
+  
+  container.insertAdjacentHTML('beforeend', imageHtml);
+};
+
+window.removeImage = (imageId) => {
+  const imageEl = document.querySelector(`[data-image-id="${imageId}"]`);
+  if (imageEl) {
+    // Remove from productImages array if it exists
+    const index = productImages.findIndex(img => img.id === imageId);
+    if (index !== -1) {
+      productImages.splice(index, 1);
+    }
+    imageEl.remove();
+  }
+};
+
+window.handleImagePreview = (imageId, input) => {
+  const file = input.files[0];
+  if (!file) return;
+  
+  const previewDiv = document.getElementById(`preview-${imageId}`);
+  if (!previewDiv) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewDiv.innerHTML = `
+      <img src="${e.target.result}" alt="Preview" style="max-width:200px;max-height:200px;border-radius:var(--radius);object-fit:cover;border:2px solid var(--light-grey);" />
+    `;
+  };
+  reader.readAsDataURL(file);
+  
+  // Store in productImages array
+  const existingIndex = productImages.findIndex(img => img.id === imageId);
+  if (existingIndex !== -1) {
+    productImages[existingIndex] = { id: imageId, file, preview: reader.result };
+  } else {
+    productImages.push({ id: imageId, file, preview: reader.result });
+  }
+};
+
 const handleSubmit = async (event) => {
   event.preventDefault();
   const form = event.target;
@@ -156,12 +221,50 @@ const handleSubmit = async (event) => {
     
     formData.variants = variantsData;
     
+    // Collect product images
+    const imageInputs = document.querySelectorAll('[data-image-id] input[type="file"]');
+    const imagesToUpload = [];
+    imageInputs.forEach(input => {
+      if (input.files && input.files[0]) {
+        imagesToUpload.push(input.files[0]);
+      }
+    });
+    
+    // Build FormData for multipart upload
+    const formDataToSend = new FormData();
+    
+    // Add basic fields
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description || '');
+    if (formData.category) {
+      formDataToSend.append('category_id', formData.category);
+    }
+    formDataToSend.append('gender', formData.gender);
+    formDataToSend.append('base_price', formData.base_price);
+    formDataToSend.append('is_active', formData.is_active ? 'true' : 'false');
+    formDataToSend.append('is_featured', formData.is_featured ? 'true' : 'false');
+    
+    // Add variants
+    if (formData.variants && formData.variants.length > 0) {
+      formDataToSend.append('variants', JSON.stringify(formData.variants));
+    }
+    
+    // Add hero_media if provided
+    if (formData.hero_media) {
+      formDataToSend.append('hero_media', formData.hero_media);
+    }
+    
+    // Add product images
+    imagesToUpload.forEach((file, idx) => {
+      formDataToSend.append(`product_image_${idx}`, file);
+    });
+    
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creating...';
     }
     
-    await adminApi.createProduct(formData);
+    await adminApi.createProduct(formDataToSend);
     
     alert('Product created successfully!');
     window.location.href = '/admin/products.html';
@@ -198,6 +301,11 @@ const handleSubmit = async (event) => {
       const addVariantBtn = document.getElementById('add-variant-btn');
       if (addVariantBtn) {
         addVariantBtn.addEventListener('click', () => addVariant());
+      }
+      
+      const addImageBtn = document.getElementById('add-image-btn');
+      if (addImageBtn) {
+        addImageBtn.addEventListener('click', () => addImageInput());
       }
       
       // Pre-fill first variant with main form size/color when user adds variant
