@@ -32,13 +32,22 @@ const getApiBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
-  // Production fallback - Try Render backend first, then custom domain
-  // Render backend URL (primary)
+  // Production fallback - ALWAYS USE HTTPS in production
+  // Render backend URL (primary) - HTTPS ONLY
   const RENDER_BACKEND = 'https://myshp-backend.onrender.com/api';
-  // Custom domain (if configured)
+  // Custom domain (if configured) - HTTPS ONLY
   const CUSTOM_DOMAIN = 'https://api.edithcloths.com/api';
   
-  // Prefer Render URL as it's more reliable
+  // In production (not localhost), ensure HTTPS
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '' && window.location.protocol === 'https:') {
+      // Production with HTTPS - use HTTPS backend
+      return RENDER_BACKEND;
+    }
+  }
+  
+  // Prefer Render URL as it's more reliable (HTTPS)
   return RENDER_BACKEND;
 };
 

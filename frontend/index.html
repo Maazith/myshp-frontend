@@ -12,22 +12,30 @@
         // Set API Base URL from environment variable (Vercel) or use production default
         // This allows Vercel to override the API URL via environment variables
         
-        // Production backend URL - Use Render backend (more reliable)
+        // Production backend URL - ALWAYS USE HTTPS in production
         const PRODUCTION_API_URL = 'https://myshp-backend.onrender.com/api';
         const CUSTOM_DOMAIN_API_URL = 'https://api.edithcloths.com/api'; // Fallback if custom domain configured
+        // Local development ONLY - HTTP allowed for localhost
         const LOCAL_API_URL = 'http://127.0.0.1:8000/api';
         
         // Determine which URL to use
         if (!window.API_BASE_URL) {
-            // Check for Vercel environment variable
+            // Check for Vercel environment variable (should be HTTPS)
             if (window.VERCEL_ENV_API_BASE_URL) {
-                window.API_BASE_URL = window.VERCEL_ENV_API_BASE_URL;
+                // Ensure HTTPS in production
+                const vercelUrl = window.VERCEL_ENV_API_BASE_URL;
+                if (window.location.protocol === 'https:' && !vercelUrl.startsWith('https://')) {
+                    console.warn('Vercel API URL is not HTTPS, forcing HTTPS');
+                    window.API_BASE_URL = vercelUrl.replace('http://', 'https://');
+                } else {
+                    window.API_BASE_URL = vercelUrl;
+                }
             } 
-            // Check if running locally
+            // Check if running locally - ONLY allow HTTP for localhost
             else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
                 window.API_BASE_URL = LOCAL_API_URL;
             }
-            // Production fallback
+            // Production - ALWAYS use HTTPS
             else {
                 window.API_BASE_URL = PRODUCTION_API_URL;
             }

@@ -26,19 +26,21 @@
       return window.VERCEL_ENV_API_BASE_URL;
     }
     
-    // Priority 4: Production fallback - Render backend (ALWAYS USE THIS IN PRODUCTION)
-    // This is the correct Render backend URL
+    // Priority 4: Production fallback - Render backend (ALWAYS HTTPS IN PRODUCTION)
+    // This is the correct Render backend URL - HTTPS ONLY
     const RENDER_BACKEND_URL = 'https://myshp-backend.onrender.com/api';
     
-    // In production (not localhost), always use Render backend
+    // In production (not localhost), always use HTTPS Render backend
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
-      if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '') {
+      const isProduction = hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '';
+      if (isProduction && window.location.protocol === 'https:') {
+        // Production with HTTPS - use HTTPS backend
         return RENDER_BACKEND_URL;
       }
     }
     
-    // Local development fallback
+    // Fallback - use HTTPS backend (should be overridden for local dev)
     return RENDER_BACKEND_URL;
   };
   
