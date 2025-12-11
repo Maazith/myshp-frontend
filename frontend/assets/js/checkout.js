@@ -161,54 +161,56 @@ form?.addEventListener('submit', async (event) => {
 });
 
 // Extract JWT tokens from URL parameters (after Django login redirect)
-const extractTokensFromUrl = () => {
+// Returns true if tokens were found and processed, false otherwise
+const extractTokensFromUrl = async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('token');
   const refresh = urlParams.get('refresh');
   
   if (token && refresh) {
-    // Store tokens in localStorage
+    // Store tokens in localStorage immediately
     localStorage.setItem('edithcloths_token', token);
     localStorage.setItem('edithcloths_refresh', refresh);
     
-    // Helper to handle redirect after tokens are stored
-    const handleRedirect = () => {
-      const returnUrl = localStorage.getItem('returnUrl');
-      if (returnUrl) {
-        localStorage.removeItem('returnUrl');
-        // Remove tokens from URL
-        const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
-        window.history.replaceState({}, '', newUrl);
-        
-        // Get current page name for comparison
-        const currentPage = window.location.pathname.split('/').pop() || '';
-        const currentPath = window.location.pathname;
-        
-        // Normalize returnUrl - if it's just a filename, it should match the current page filename
-        // If returnUrl is different from current page, redirect
-        if (returnUrl !== currentPage && !currentPath.includes(returnUrl.replace('.html', ''))) {
-          // Small delay to ensure tokens are stored
-          setTimeout(() => {
-            window.location.href = returnUrl;
-          }, 100);
-        }
-      } else {
-        // No returnUrl, just remove tokens from URL
-        const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
-        window.history.replaceState({}, '', newUrl);
-      }
-    };
-    
-    // Get user info from API
-    api.request('/auth/me').then(user => {
+    // Get user info from API to update authentication status
+    try {
+      const user = await api.request('/auth/me');
       localStorage.setItem('edithcloths_user', JSON.stringify(user));
-      handleRedirect();
-    }).catch(() => {
-      // Ignore errors, but still handle redirect
-      handleRedirect();
-    });
+    } catch (err) {
+      console.error('[Checkout] Error fetching user info:', err);
+      // Continue even if this fails
+    }
+    
+    // Remove tokens from URL immediately
+    const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/[?&]refresh=[^&]*/, '').replace(/^\?$/, '');
+    window.history.replaceState({}, '', newUrl);
+    
+    // Check returnUrl and handle redirect if needed
+    const returnUrl = localStorage.getItem('returnUrl');
+    if (returnUrl) {
+      localStorage.removeItem('returnUrl');
+      
+      // Get current page name for comparison
+      const currentPage = window.location.pathname.split('/').pop() || '';
+      const currentPath = window.location.pathname;
+      
+      // Normalize returnUrl - if it's just a filename, it should match the current page filename
+      // If returnUrl is different from current page, redirect
+      if (returnUrl !== currentPage && !currentPath.includes(returnUrl.replace('.html', ''))) {
+        // Redirect to intended page
+        window.location.href = returnUrl;
+        return true; // Indicate redirect is happening
+      } else {
+        // Already on target page (checkout.html), just stay here
+        // Don't redirect, tokens are processed and user is authenticated
+        return true; // Tokens were processed
+      }
+    } else {
+      // No returnUrl, tokens processed, stay on current page
+      return true; // Tokens were processed
+    }
   } else {
-    // No tokens in URL, but check if we have returnUrl and are authenticated
+    // No tokens in URL, check if we have returnUrl and are authenticated
     // This handles the case where tokens were already extracted on a previous page load
     const returnUrl = localStorage.getItem('returnUrl');
     if (returnUrl && api.isAuthenticated) {
@@ -216,21 +218,47 @@ const extractTokensFromUrl = () => {
       if (returnUrl !== currentPage && returnUrl !== window.location.pathname) {
         localStorage.removeItem('returnUrl');
         window.location.href = returnUrl;
+        return true; // Redirect is happening
       } else {
         // Already on target page, just remove returnUrl
         localStorage.removeItem('returnUrl');
+        return false;
       }
     }
+    return false; // No tokens found
   }
 };
 
-// Extract tokens immediately (before DOMContentLoaded)
-extractTokensFromUrl();
-
-window.addEventListener('DOMContentLoaded', async () => {
-  // Check auth first, then load summary
-  const isAuthenticated = await checkAuth();
-  if (isAuthenticated) {
+// Extract tokens immediately (before DOMContentLoaded) and wait for completion
+// This prevents checkAuth from running before tokens are processed
+const initCheckout = async () => {
+  // First, extract and process any tokens from URL
+  const tokensProcessed = await extractTokensFromUrl();
+  
+  // If tokens were processed and a redirect is happening, don't proceed
+  if (tokensProcessed && (window.location.href.includes('/login') || window.location.href !== window.location.pathname + window.location.search)) {
+    return; // Redirect is happening, don't load page
+  }
+  
+  // Wait for DOM to be ready
+  if (document.readyState === 'loading') {
+    await new Promise(resolve => window.addEventListener('DOMContentLoaded', resolve));
+  }
+  
+  // Now check authentication - tokens should be processed by now
+  // Only redirect to login if we're NOT authenticated and NO tokens were just processed
+  if (!api.isAuthenticated && !tokensProcessed) {
+    const isAuthenticated = await checkAuth();
+    if (!isAuthenticated) {
+      return; // Redirected to login
+    }
+  }
+  
+  // Load summary if authenticated
+  if (api.isAuthenticated) {
     loadSummary();
   }
-});
+};
+
+// Start initialization immediately
+initCheckout();
