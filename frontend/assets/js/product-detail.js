@@ -166,7 +166,27 @@ window.selectImage = (index) => {
   });
 };
 
-const uniqueValues = (key) => [...new Set(state.variants.map((variant) => variant[key]))];
+const uniqueValues = (key) => {
+  if (!state.variants || state.variants.length === 0) return [];
+  
+  // Extract all values for the key, filter out null/undefined/empty strings, and normalize
+  const values = state.variants
+    .map((variant) => variant[key])
+    .filter((value) => value !== null && value !== undefined && value !== '')
+    .map((value) => String(value).trim()); // Normalize to string and trim
+  
+  // Use Set to get unique values, then sort for consistent display
+  const unique = [...new Set(values)];
+  
+  console.log(`[Product Detail] uniqueValues('${key}'):`, {
+    totalVariants: state.variants.length,
+    extractedValues: values,
+    uniqueValues: unique,
+    variants: state.variants.map(v => ({ size: v.size, color: v.color, id: v.id }))
+  });
+  
+  return unique.sort(); // Sort alphabetically for consistent display
+};
 
 const populateSizes = () => {
   // Check if we have variants at all
@@ -180,6 +200,8 @@ const populateSizes = () => {
   }
   
   const options = uniqueValues('size');
+  console.log('[Product Detail] populateSizes - Available sizes:', options, 'from', state.variants.length, 'variants');
+  
   if (!options.length) {
     sizeSelect.innerHTML = '<option disabled>No sizes available</option>';
     colorSelect.innerHTML = '<option disabled>No colors available</option>';
@@ -267,7 +289,9 @@ const loadProduct = async () => {
       productId: product.id,
       title: product.title,
       variantsCount: state.variants.length,
-      variants: state.variants
+      variants: state.variants,
+      sizesFound: [...new Set(state.variants.map(v => v.size).filter(s => s))],
+      colorsFound: [...new Set(state.variants.map(v => v.color).filter(c => c))]
     });
     
     holder.title.textContent = product.title;
