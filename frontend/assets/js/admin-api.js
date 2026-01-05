@@ -31,7 +31,7 @@ const getApiBaseUrl = () => {
     return window.VERCEL_ENV_API_BASE_URL;
   }
   // Priority 4: Production fallback (Render backend) - ALWAYS USE IN PRODUCTION
-  const RENDER_BACKEND_URL = 'https://myshp-backend.onrender.com/api';
+  const RENDER_BACKEND_URL = 'https://myshp-backend-1.onrender.com/api';
   
   // In production (not localhost), always use Render backend
   if (typeof window !== 'undefined') {

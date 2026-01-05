@@ -28,7 +28,7 @@
     
     // Priority 4: Production fallback - Render backend (ALWAYS HTTPS IN PRODUCTION)
     // This is the correct Render backend URL - HTTPS ONLY
-    const RENDER_BACKEND_URL = 'https://myshp-backend.onrender.com/api';
+    const RENDER_BACKEND_URL = 'https://myshp-backend-1.onrender.com/api';
     
     // In production (not localhost), always use HTTPS Render backend
     if (typeof window !== 'undefined') {

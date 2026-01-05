@@ -5,7 +5,7 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://myshp-backend.onrender.com/api"
+    "NEXT_PUBLIC_API_URL": "https://myshp-backend-1.onrender.com/api"
   },
   "rewrites": [
     {

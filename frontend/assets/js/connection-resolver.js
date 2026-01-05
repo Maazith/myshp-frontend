@@ -5,7 +5,7 @@
 export class ConnectionResolver {
   constructor() {
     this.possibleUrls = [
-      'https://myshp-backend.onrender.com/api', // Render backend (primary)
+      'https://myshp-backend-1.onrender.com/api', // Render backend (primary)
       'https://api.edithcloths.com/api', // Custom domain (if configured)
       'http://127.0.0.1:8000/api', // Local development
       'http://localhost:8000/api', // Local development
@@ -26,7 +26,7 @@ export class ConnectionResolver {
     }
 
     // Get current configured URL - prefer Render backend
-    const currentUrl = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+    const currentUrl = window.API_BASE_URL || 'https://myshp-backend-1.onrender.com/api';
     
     // Try current URL first
     if (await this.testConnection(currentUrl)) {
@@ -90,7 +90,7 @@ export class ConnectionResolver {
             title: '1. Check if Backend is Deployed',
             steps: [
               'Go to Render Dashboard: https://dashboard.render.com',
-              'Look for service: myshp-backend',
+              'Look for service: myshp-backend-1',
               'Check service status (should be "Live")',
             ]
           },
@@ -106,7 +106,7 @@ export class ConnectionResolver {
           {
             title: '3. Wake Up Service (if sleeping)',
             steps: [
-              'Go to Render Dashboard → myshp-backend service',
+              'Go to Render Dashboard → myshp-backend-1 service',
               'Click "Manual Deploy" → "Deploy latest commit"',
               'Wait 1-2 minutes for service to wake up',
             ]
@@ -188,7 +188,7 @@ export class ConnectionResolver {
       };
     } else {
       console.error('❌ No working backend found');
-      const currentUrl = window.API_BASE_URL || 'https://myshp-backend.onrender.com/api';
+      const currentUrl = window.API_BASE_URL || 'https://myshp-backend-1.onrender.com/api';
       const errorInfo = this.getErrorMessage(currentUrl);
       return {
         success: false,

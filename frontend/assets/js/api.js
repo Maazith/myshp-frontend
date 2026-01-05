@@ -34,7 +34,7 @@ const getApiBaseUrl = () => {
   }
   // Production fallback - ALWAYS USE HTTPS in production
   // Render backend URL (primary) - HTTPS ONLY
-  const RENDER_BACKEND = 'https://myshp-backend.onrender.com/api';
+  const RENDER_BACKEND = 'https://myshp-backend-1.onrender.com/api';
   // Custom domain (if configured) - HTTPS ONLY
   const CUSTOM_DOMAIN = 'https://api.edithcloths.com/api';
   
