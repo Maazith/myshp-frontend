@@ -104,10 +104,12 @@ main {
   background: #000000;
   border-bottom: 1px solid var(--light-grey);
   box-shadow: var(--shadow);
-  z-index: 50;
+  z-index: 1000;
   min-height: 70px;
   flex-wrap: wrap;
   gap: 1rem;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .nav-brand {
@@ -893,6 +895,11 @@ input[type="range"]::-moz-range-thumb:hover {
   border-top: 1px solid var(--light-grey);
   text-align: center;
   color: #FFFFFF;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  position: relative;
+  z-index: 100;
 }
 
 .admin-grid {
@@ -1578,4 +1585,33 @@ h1, h2, h3, h4, h5, h6 {
   .hero {
     aspect-ratio: 16 / 9;
   }
+}
+
+/* Production Fix: Ensure navbar and footer are always visible */
+header[data-component="navbar"] {
+  visibility: visible !important;
+  display: block !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1000 !important;
+}
+
+header[data-component="navbar"] .nav {
+  visibility: visible !important;
+  display: flex !important;
+  opacity: 1 !important;
+}
+
+footer[data-component="footer"] {
+  visibility: visible !important;
+  display: block !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 100 !important;
+}
+
+footer[data-component="footer"] .footer {
+  visibility: visible !important;
+  display: block !important;
+  opacity: 1 !important;
 }
