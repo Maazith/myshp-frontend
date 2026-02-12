@@ -22,27 +22,27 @@ const getApiBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
-  // Priority 2: Window variable set by HTML script tag
+  // Priority 2: Window variable set by HTML script tag or env injector
   if (typeof window !== 'undefined' && window.API_BASE_URL) {
     return window.API_BASE_URL;
   }
-  // Priority 3: Vercel environment variable
+  // Priority 3: Vercel environment variable exposed to window
   if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
     return window.VERCEL_ENV_API_BASE_URL;
   }
-  // Priority 4: Production fallback (Render backend) - ALWAYS USE IN PRODUCTION
-  const RENDER_BACKEND_URL = 'https://myshp-backend-1.onrender.com/api';
+  // Priority 4: Production fallback (Railway backend) - ALWAYS USE IN PRODUCTION
+  const RAILWAY_BACKEND_URL = 'https://web-production-d8ef7.up.railway.app/api';
   
-  // In production (not localhost), always use Render backend
+  // In production (not localhost), always use Railway backend
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '') {
-      return RENDER_BACKEND_URL;
+      return RAILWAY_BACKEND_URL;
     }
   }
   
   // Local development fallback
-  return RENDER_BACKEND_URL;
+  return RAILWAY_BACKEND_URL;
 };
 
 export const adminApi = {

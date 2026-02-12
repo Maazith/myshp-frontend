@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "echo 'No build step needed for static site'",
+  "buildCommand": "echo 'Static frontend build (no framework)'",
   "outputDirectory": ".",
   "cleanUrls": false,
   "trailingSlash": false,
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://myshp-backend-1.onrender.com/api"
+    "NEXT_PUBLIC_API_URL": "https://web-production-d8ef7.up.railway.app/api"
   },
   "rewrites": [
     {

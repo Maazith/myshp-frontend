@@ -3,8 +3,8 @@
 
 // Backend API Configuration
 export const BACKEND_CONFIG = {
-  // Production backend URL (Render deployment)
-  PRODUCTION_URL: 'https://myshp-backend-1.onrender.com/api',
+  // Production backend URL (Railway deployment) - ALWAYS HTTPS
+  PRODUCTION_URL: 'https://web-production-d8ef7.up.railway.app/api',
   
   // Local development URL (for testing)
   LOCAL_URL: 'http://127.0.0.1:8000/api',

@@ -90,7 +90,7 @@ export const mountNavbar = async () => {
   let backendBaseUrl = api.baseUrl.replace('/api', '');
   // Fallback if baseUrl is not set
   if (!backendBaseUrl || backendBaseUrl === '/api' || backendBaseUrl.endsWith('/api')) {
-    backendBaseUrl = 'https://myshp-backend-1.onrender.com';
+    backendBaseUrl = 'https://web-production-d8ef7.up.railway.app';
   }
   
   // Determine correct href paths based on current location
@@ -201,7 +201,7 @@ export const mountNavbar = async () => {
         e.preventDefault();
         let backendBaseUrl = api.baseUrl.replace('/api', '');
         if (!backendBaseUrl || backendBaseUrl === '/api' || backendBaseUrl.endsWith('/api')) {
-          backendBaseUrl = 'https://myshp-backend-1.onrender.com';
+          backendBaseUrl = 'https://web-production-d8ef7.up.railway.app';
         }
         const currentUrl = encodeURIComponent(window.location.href);
         window.location.href = `${backendBaseUrl}/login/?next=${currentUrl}`;

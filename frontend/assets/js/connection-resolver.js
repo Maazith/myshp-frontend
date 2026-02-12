@@ -5,7 +5,7 @@
 export class ConnectionResolver {
   constructor() {
     this.possibleUrls = [
-      'https://myshp-backend-1.onrender.com/api', // Render backend (primary)
+      'https://web-production-d8ef7.up.railway.app/api', // Railway backend (primary)
       'https://api.edithcloths.com/api', // Custom domain (if configured)
       'http://127.0.0.1:8000/api', // Local development
       'http://localhost:8000/api', // Local development
@@ -25,8 +25,8 @@ export class ConnectionResolver {
       }
     }
 
-    // Get current configured URL - prefer Render backend
-    const currentUrl = window.API_BASE_URL || 'https://myshp-backend-1.onrender.com/api';
+    // Get current configured URL - prefer Railway backend
+    const currentUrl = window.API_BASE_URL || 'https://web-production-d8ef7.up.railway.app/api';
     
     // Try current URL first
     if (await this.testConnection(currentUrl)) {
@@ -81,7 +81,7 @@ export class ConnectionResolver {
   getErrorMessage(url) {
     const hostname = new URL(url).hostname;
     
-    if (hostname.includes('onrender.com')) {
+    if (hostname.includes('up.railway.app')) {
       return {
         title: 'Backend Not Deployed or Sleeping',
         message: `The backend at ${url} is not accessible.`,
@@ -89,26 +89,24 @@ export class ConnectionResolver {
           {
             title: '1. Check if Backend is Deployed',
             steps: [
-              'Go to Render Dashboard: https://dashboard.render.com',
-              'Look for service: myshp-backend-1',
+              'Go to Railway Dashboard',
+              'Look for your backend service',
               'Check service status (should be "Live")',
             ]
           },
           {
             title: '2. Deploy Backend (if not deployed)',
             steps: [
-              'Go to Render Dashboard → "New +" → "Blueprint"',
-              'Select your GitHub repository',
-              'Render will use backend/render.yaml',
-              'Wait 10 minutes for deployment',
+              'Deploy your Django backend on Railway from the GitHub repo',
+              'Wait a few minutes for deployment to complete',
             ]
           },
           {
-            title: '3. Wake Up Service (if sleeping)',
+            title: '3. Restart Service (if needed)',
             steps: [
-              'Go to Render Dashboard → myshp-backend-1 service',
-              'Click "Manual Deploy" → "Deploy latest commit"',
-              'Wait 1-2 minutes for service to wake up',
+              'Open your backend service in Railway',
+              'Trigger a redeploy / restart',
+              'Wait 1–2 minutes and try again',
             ]
           },
           {
@@ -116,15 +114,14 @@ export class ConnectionResolver {
             steps: [
               'Start local backend: cd backend && python manage.py runserver',
               'Backend will run at: http://127.0.0.1:8000',
-              'Connection will automatically use local backend',
+              'Connection will automatically try local backend',
             ]
           },
           {
-            title: '5. Check Service Name',
+            title: '5. Check Service URL',
             steps: [
-              'Verify service name in Render Dashboard',
-              'If different from "myshp-backend", update frontend URL',
-              'Or rename service in Render to match',
+              'Verify the exact Railway URL in the dashboard',
+              'If different from the one in the frontend, update the API URL configuration',
             ]
           }
         ]
@@ -186,9 +183,9 @@ export class ConnectionResolver {
         url: workingUrl,
         message: `Connected to backend at ${workingUrl}`
       };
-    } else {
-      console.error('❌ No working backend found');
-      const currentUrl = window.API_BASE_URL || 'https://myshp-backend-1.onrender.com/api';
+      } else {
+        console.error('❌ No working backend found');
+        const currentUrl = window.API_BASE_URL || 'https://web-production-d8ef7.up.railway.app/api';
       const errorInfo = this.getErrorMessage(currentUrl);
       return {
         success: false,

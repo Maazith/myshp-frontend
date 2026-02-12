@@ -8,7 +8,7 @@
   // Get API base URL with priority:
   // 1. Vercel environment variable (NEXT_PUBLIC_API_URL)
   // 2. Window variable set by HTML script tag
-  // 3. Production fallback (Render backend)
+  // 3. Production fallback (Railway backend)
   
   const getApiBaseUrl = () => {
     // Priority 1: Vercel environment variable (set in Vercel dashboard)
@@ -26,9 +26,8 @@
       return window.VERCEL_ENV_API_BASE_URL;
     }
     
-    // Priority 4: Production fallback - Render backend (ALWAYS HTTPS IN PRODUCTION)
-    // This is the correct Render backend URL - HTTPS ONLY
-    const RENDER_BACKEND_URL = 'https://myshp-backend-1.onrender.com/api';
+    // Priority 4: Production fallback - Railway backend (ALWAYS HTTPS IN PRODUCTION)
+    const RAILWAY_BACKEND_URL = 'https://web-production-d8ef7.up.railway.app/api';
     
     // In production (not localhost), always use HTTPS Render backend
     if (typeof window !== 'undefined') {
@@ -36,12 +35,12 @@
       const isProduction = hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '';
       if (isProduction && window.location.protocol === 'https:') {
         // Production with HTTPS - use HTTPS backend
-        return RENDER_BACKEND_URL;
+        return RAILWAY_BACKEND_URL;
       }
     }
     
     // Fallback - use HTTPS backend (should be overridden for local dev)
-    return RENDER_BACKEND_URL;
+    return RAILWAY_BACKEND_URL;
   };
   
   // Set API base URL globally

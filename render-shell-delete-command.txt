@@ -8,3 +8,9 @@ python manage.py shell -c "from shop.models import Product, Banner; products_cou
 
 
 
+
+
+
+
+
+

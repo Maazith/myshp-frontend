@@ -219,3 +219,6 @@ After these fixes:
 
 The navbar and footer should now appear exactly as they do on localhost when deployed to Render production.
 
+
+
+

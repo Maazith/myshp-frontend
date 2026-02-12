@@ -33,8 +33,8 @@ const getApiBaseUrl = () => {
     return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
   // Production fallback - ALWAYS USE HTTPS in production
-  // Render backend URL (primary) - HTTPS ONLY
-  const RENDER_BACKEND = 'https://myshp-backend-1.onrender.com/api';
+  // Railway backend URL (primary) - HTTPS ONLY
+  const RAILWAY_BACKEND = 'https://web-production-d8ef7.up.railway.app/api';
   // Custom domain (if configured) - HTTPS ONLY
   const CUSTOM_DOMAIN = 'https://api.edithcloths.com/api';
   
@@ -43,12 +43,12 @@ const getApiBaseUrl = () => {
     const hostname = window.location.hostname;
     if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '' && window.location.protocol === 'https:') {
       // Production with HTTPS - use HTTPS backend
-      return RENDER_BACKEND;
+      return RAILWAY_BACKEND;
     }
   }
   
-  // Prefer Render URL as it's more reliable (HTTPS)
-  return RENDER_BACKEND;
+  // Prefer Railway URL as primary (HTTPS)
+  return RAILWAY_BACKEND;
 };
 
 export const api = {
