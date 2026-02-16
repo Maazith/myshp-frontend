@@ -6,7 +6,7 @@
   'use strict';
   
   // Production backend URL
-  const PRODUCTION_API_URL = 'https://api.edithcloths.com/api';
+  const PRODUCTION_API_URL = 'https://web-production-d8ef7.up.railway.app/api';
   
   // Local development URL
   const LOCAL_API_URL = 'http://127.0.0.1:8000/api';

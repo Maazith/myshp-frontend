@@ -36,8 +36,8 @@ const getApiBaseUrl = () => {
   // Railway backend URL (primary) - HTTPS ONLY
   const RAILWAY_BACKEND = 'https://web-production-d8ef7.up.railway.app/api';
   // Custom domain (if configured) - HTTPS ONLY
-  const CUSTOM_DOMAIN = 'https://api.edithcloths.com/api';
-  
+  // const CUSTOM_DOMAIN = 'https://api.edithcloths.com/api';
+
   // In production (not localhost), ensure HTTPS
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
@@ -46,7 +46,7 @@ const getApiBaseUrl = () => {
       return RAILWAY_BACKEND;
     }
   }
-  
+
   // Prefer Railway URL as primary (HTTPS)
   return RAILWAY_BACKEND;
 };
@@ -72,18 +72,18 @@ export const api = {
     // Note: Redirect handled by calling code (navbar logout button)
   },
   async request(path, { method = 'GET', body, isForm = false, cacheBust = false } = {}) {
-    const options = { 
+    const options = {
       method,
       credentials: 'include'  // CRITICAL: Include cookies for session-based cart
     };
-    
+
     // Add cache-busting for GET requests to ensure fresh data
     let requestPath = path;
     if (method === 'GET' && cacheBust) {
       const separator = path.includes('?') ? '&' : '?';
       requestPath = `${path}${separator}_t=${Date.now()}`;
     }
-    
+
     // Build headers - don't include Content-Type for FormData
     if (isForm || body instanceof FormData) {
       options.headers = {};
@@ -104,17 +104,17 @@ export const api = {
         options.body = JSON.stringify(body);
       }
     }
-    
+
     try {
       const apiBaseUrl = getApiBaseUrl();
       const fullUrl = `${apiBaseUrl}${requestPath}`;
-      
+
       const response = await fetch(fullUrl, options);
-      
+
       if (response.status === 204) return null;
-      
+
       const data = await response.json().catch(() => ({}));
-      
+
       if (!response.ok) {
         // Handle 401 errors (unauthorized)
         if (response.status === 401) {
@@ -124,7 +124,7 @@ export const api = {
           localStorage.removeItem(USER_KEY);
           throw new Error('Please log in to continue.');
         }
-        
+
         // Handle 404 errors (not found)
         if (response.status === 404) {
           // Return empty array/object for list endpoints, null for single items
@@ -133,7 +133,7 @@ export const api = {
           }
           throw new Error('Item not found.');
         }
-        
+
         // Handle 400 errors (validation errors)
         if (response.status === 400 && data.detail) {
           let errorMsg = '';
@@ -153,23 +153,23 @@ export const api = {
           }
           throw new Error(errorMsg || 'Please check your input and try again.');
         }
-        
+
         // Handle 500 errors (server errors)
         if (response.status >= 500) {
           throw new Error('Server error. Please try again later.');
         }
-        
+
         // Generic error handling
         const errorMessage = data.detail || data.message || data.error || `Error ${response.status}`;
         throw new Error(errorMessage);
       }
-      
+
       return data;
     } catch (error) {
       // Network/connection errors
       if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
         const backendUrl = getApiBaseUrl().replace('/api', '');
-        
+
         // User-friendly error message based on endpoint type
         if (path.includes('/products/')) {
           throw new Error('Unable to load products. Please check your connection and try again.');
@@ -181,7 +181,7 @@ export const api = {
           throw new Error('Unable to connect to server. Please check your connection.');
         }
       }
-      
+
       // Re-throw other errors as-is
       throw error;
     }
@@ -197,27 +197,27 @@ export const api = {
       credentials: 'include',  // Include cookies for session
       body: JSON.stringify(credentials),
     };
-    
+
     const response = await fetch(`${getApiBaseUrl()}/auth/login`, options);
-    
+
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data.detail || data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     // Store tokens
     if (data.access && data.refresh) {
       localStorage.setItem(ACCESS_KEY, data.access);
       localStorage.setItem(REFRESH_KEY, data.refresh);
-      
+
       // Store user data if provided
       if (data.user) {
         localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       }
     }
-    
+
     return data;
   },
   setAuthTokens(accessToken, refreshToken, user) {

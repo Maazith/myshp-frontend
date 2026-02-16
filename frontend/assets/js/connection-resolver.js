@@ -6,7 +6,7 @@ export class ConnectionResolver {
   constructor() {
     this.possibleUrls = [
       'https://web-production-d8ef7.up.railway.app/api', // Railway backend (primary)
-      'https://api.edithcloths.com/api', // Custom domain (if configured)
+      // 'https://api.edithcloths.com/api', // Custom domain (removed to force Railway)
       'http://127.0.0.1:8000/api', // Local development
       'http://localhost:8000/api', // Local development
     ];
@@ -27,7 +27,7 @@ export class ConnectionResolver {
 
     // Get current configured URL - prefer Railway backend
     const currentUrl = window.API_BASE_URL || 'https://web-production-d8ef7.up.railway.app/api';
-    
+
     // Try current URL first
     if (await this.testConnection(currentUrl)) {
       this.workingUrl = currentUrl;
@@ -56,7 +56,7 @@ export class ConnectionResolver {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
-      
+
       const response = await fetch(`${url}/`, {
         method: 'GET',
         signal: controller.signal,
@@ -64,9 +64,9 @@ export class ConnectionResolver {
           'Content-Type': 'application/json',
         }
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
         const data = await response.json().catch(() => ({}));
         return true;
@@ -80,7 +80,7 @@ export class ConnectionResolver {
   // Get helpful error message with solutions
   getErrorMessage(url) {
     const hostname = new URL(url).hostname;
-    
+
     if (hostname.includes('up.railway.app')) {
       return {
         title: 'Backend Not Deployed or Sleeping',
@@ -171,9 +171,9 @@ export class ConnectionResolver {
   // Auto-resolve connection and update API URL
   async autoResolve() {
     console.log('🔍 Auto-resolving backend connection...');
-    
+
     const workingUrl = await this.findWorkingBackend();
-    
+
     if (workingUrl) {
       console.log('✅ Found working backend:', workingUrl);
       window.API_BASE_URL = workingUrl;
@@ -183,9 +183,9 @@ export class ConnectionResolver {
         url: workingUrl,
         message: `Connected to backend at ${workingUrl}`
       };
-      } else {
-        console.error('❌ No working backend found');
-        const currentUrl = window.API_BASE_URL || 'https://web-production-d8ef7.up.railway.app/api';
+    } else {
+      console.error('❌ No working backend found');
+      const currentUrl = window.API_BASE_URL || 'https://web-production-d8ef7.up.railway.app/api';
       const errorInfo = this.getErrorMessage(currentUrl);
       return {
         success: false,

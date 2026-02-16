@@ -5,22 +5,22 @@
 export const BACKEND_CONFIG = {
   // Production backend URL (Railway deployment) - ALWAYS HTTPS
   PRODUCTION_URL: 'https://web-production-d8ef7.up.railway.app/api',
-  
+
   // Local development URL (for testing)
   LOCAL_URL: 'http://127.0.0.1:8000/api',
-  
+
   // Determine which URL to use
   get API_BASE_URL() {
     // Check for environment variable (Vercel/deployment)
     if (typeof window !== 'undefined' && window.API_BASE_URL) {
       return window.API_BASE_URL;
     }
-    
+
     // Check for Vercel environment variable
     if (typeof window !== 'undefined' && window.VERCEL_ENV_API_BASE_URL) {
       return window.VERCEL_ENV_API_BASE_URL;
     }
-    
+
     // Check if running locally (localhost or 127.0.0.1)
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
@@ -28,26 +28,26 @@ export const BACKEND_CONFIG = {
         return this.LOCAL_URL;
       }
     }
-    
+
     // Production fallback
     return this.PRODUCTION_URL;
   },
-  
+
   // Get backend base URL (without /api)
   get BACKEND_BASE_URL() {
     return this.API_BASE_URL.replace('/api', '');
   },
-  
+
   // Media URL (for images, files)
   get MEDIA_URL() {
     return `${this.BACKEND_BASE_URL}/media`;
   },
-  
+
   // Static files URL
   get STATIC_URL() {
     return `${this.BACKEND_BASE_URL}/static`;
   },
-  
+
   // Admin panel URL
   get ADMIN_URL() {
     return `${this.BACKEND_BASE_URL}/admin`;
